@@ -1,0 +1,57 @@
+{
+  "name": "bugo/flexgrid",
+  "description": "Fluent PHP builder for CSS Grid and Flexbox layouts",
+  "keywords": [
+    "css grid",
+    "css grid php",
+    "css grid builder",
+    "css grid flex",
+    "css flexbox",
+    "css flexbox php",
+    "css flexbox builder"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bugo",
+      "email": "bugo@dragomano.ru"
+    }
+  ],
+  "require": {
+    "php": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "FlexGrid\\": "src/"
+    }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.94",
+    "pestphp/pest": "^3.8|^4.4",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.3",
+    "vimeo/psalm": "^6.15"
+  },
+  "scripts": {
+    "fix": "vendor/bin/php-cs-fixer fix",
+    "rector": "vendor/bin/rector process --clear-cache",
+    "check": "vendor/bin/rector process --dry-run --clear-cache",
+    "phpstan": "vendor/bin/phpstan analyse -l 10 src --memory-limit=512M --debug --no-progress",
+    "psalm": "vendor/bin/psalm --stats --no-cache",
+    "test": "vendor/bin/pest --colors=always --display-warnings",
+    "test-coverage": "vendor/bin/pest --colors=always --coverage --min=100",
+    "test-coverage-clover": "vendor/bin/pest --colors=always --min=100 --coverage-clover coverage.xml",
+    "test-coverage-html": "vendor/bin/pest --colors=always --min=100 --coverage-html coverage",
+    "test-mutate": "vendor/bin/pest --colors=always --mutate --covered-only -d memory_limit=1G --path=src"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "minimum-stability": "stable"
+}

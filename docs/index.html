@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlexGrid PHP Library</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #11111a;
+      --card: #16161f;
+      --border: #22223a;
+      --accent: #6c63ff;
+      --accent2: #00e5a0;
+      --accent3: #ff6b6b;
+      --text: #e4e4f0;
+      --muted: #6b6b8a;
+      --keyword: #c792ea;
+      --string: #c3e88d;
+      --fn: #82aaff;
+      --num: #f78c6c;
+      --comment: #546e7a;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 4rem 2rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .subtitle {
+      color: #b6b6cf;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      max-width: 540px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    /* ── NAV TABS ── */
+    .tabs {
+      max-width: 1200px;
+      margin: 3rem auto 0;
+      padding: 0 2rem;
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    @media (max-width: 768px) {
+      .tabs {
+        flex-direction: column;
+        border-bottom: none;
+        gap: 0;
+      }
+    }
+
+    .tab {
+      padding: 0.75rem 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.7rem, 2vw, 0.8rem);
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 768px) {
+      .tab {
+        border-bottom: 1px solid var(--border);
+        border-left: 3px solid transparent;
+        margin-bottom: 0;
+        text-align: left;
+      }
+
+      .tab.active {
+        border-bottom-color: var(--border);
+        border-left-color: var(--accent);
+      }
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 2rem calc(7rem + env(safe-area-inset-bottom));
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    /* ── EXAMPLE BLOCK ── */
+    .example {
+      margin-bottom: 3rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--card);
+      transition: border-color 0.2s;
+    }
+
+    .example:hover {
+      border-color: var(--accent);
+    }
+
+    .example-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .example-title {
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .example-num {
+      background: var(--accent);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      padding: 0.1rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .example-title .example-num.fn {
+      color: #fff;
+    }
+
+    .copy-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.05em;
+    }
+
+    .copy-btn:hover {
+      color: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    .copy-btn.copied {
+      color: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    .example-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 768px) {
+      .example-body {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 1.5rem 1rem calc(10rem + env(safe-area-inset-bottom));
+      }
+
+      body {
+        padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+      }
+    }
+
+    .code-pane {
+      padding: 1.5rem;
+      border-right: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .code-pane:last-child {
+      border-right: none;
+    }
+
+    .pane-label {
+      font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.65rem, 2vw, 0.78rem);
+      line-height: 1.7;
+      tab-size: 2;
+    }
+
+    /* Syntax colors */
+    .kw {
+      color: var(--keyword);
+    }
+
+    .fn {
+      color: var(--fn);
+    }
+
+    .str {
+      color: var(--string);
+    }
+
+    .num {
+      color: var(--num);
+    }
+
+    .cm {
+      color: var(--comment);
+      font-style: italic;
+    }
+
+    .cls {
+      color: #ffcb6b;
+    }
+
+    .op {
+      color: var(--muted);
+    }
+
+    .prop {
+      color: var(--accent2);
+    }
+
+    /* ── Preview ── */
+    .preview-pane {
+      padding: 1.5rem;
+      background: var(--surface);
+    }
+
+    .grid-demo {
+      width: 100%;
+      min-height: 160px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .grid-demo .cell {
+      background: linear-gradient(135deg, #6c63ff22, #6c63ff44);
+      border: 1px solid #6c63ff55;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      color: var(--accent);
+      padding: 0.75rem;
+      min-height: 60px;
+    }
+
+    .grid-demo .cell.accent2 {
+      background: linear-gradient(135deg, #00e5a022, #00e5a044);
+      border-color: #00e5a055;
+      color: var(--accent2);
+    }
+
+    .grid-demo .cell.accent3 {
+      background: linear-gradient(135deg, #ff6b6b22, #ff6b6b44);
+      border-color: #ff6b6b55;
+      color: var(--accent3);
+    }
+
+    /* Specific preview layouts */
+    .demo-cols3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .demo-holygrail {
+      display: grid;
+      grid-template-columns: 80px 1fr 60px;
+      grid-template-rows: 36px 100px 36px;
+      grid-template-areas:
+        "header header header"
+        "sidebar main aside"
+        "footer footer footer";
+      gap: 6px;
+    }
+
+    .demo-holygrail .h {
+      grid-area: header;
+    }
+
+    .demo-holygrail .s {
+      grid-area: sidebar;
+    }
+
+    .demo-holygrail .m {
+      grid-area: main;
+    }
+
+    .demo-holygrail .a {
+      grid-area: aside;
+    }
+
+    .demo-holygrail .f {
+      grid-area: footer;
+    }
+
+    .demo-holygrail .cell,
+    .demo-gallery .cell {
+      min-height: 0;
+      padding: 0.35rem;
+    }
+
+    .demo-fluid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+    }
+
+    .demo-gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 50px);
+      gap: 6px;
+    }
+
+    .demo-gallery .feature {
+      grid-row: 1 / span 2;
+      grid-column: 1 / span 2;
+    }
+
+    .demo-gallery .wide {
+      grid-row: 3;
+      grid-column: 1 / span 3;
+    }
+
+    .demo-dashboard {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      grid-template-rows: 36px 1fr 28px;
+      grid-template-areas:
+        "header header"
+        "nav    main"
+        "nav    footer";
+      gap: 6px;
+      min-height: 180px;
+    }
+
+    .demo-dashboard .h {
+      grid-area: header;
+    }
+
+    .demo-dashboard .n {
+      grid-area: nav;
+    }
+
+    .demo-dashboard .m {
+      grid-area: main;
+    }
+
+    .demo-dashboard .f {
+      grid-area: footer;
+    }
+
+    .demo-dashboard .cell {
+      min-height: 0;
+      padding: 0.3rem;
+    }
+
+    .demo-masonry .cell {
+      min-height: 0;
+      padding: 0.3rem;
+    }
+
+    .demo-flex-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .demo-flex-cards {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .demo-flex-cards .cell {
+      flex: 1 1 90px;
+      min-height: 46px;
+    }
+
+    .demo-flex-sidebar {
+      display: flex;
+      gap: 8px;
+      min-height: 90px;
+    }
+
+    .demo-flex-sidebar .side {
+      flex: 0 0 72px;
+    }
+
+    .demo-flex-sidebar .main {
+      flex: 1 1 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>FlexGrid<br>PHP Builder</h1>
+    <p class="subtitle">Fluent, type-safe API for generating CSS Grid and Flexbox layouts — with presets, named areas,
+      responsive
+      breakpoints, and inline styles.</p>
+    
+    <div style="margin-top: 2rem; padding: 1rem 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; max-width: 540px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+        <div style="font-size: clamp(0.65rem, 2vw, 0.75rem); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);">Installation</div>
+        <button class="copy-btn" onclick="copyCode(this, 'install-cmd')">copy</button>
+      </div>
+      <pre id="install-cmd" style="font-family: 'JetBrains Mono', monospace; font-size: clamp(0.7rem, 2.2vw, 0.85rem); color: var(--accent2); margin: 0;">composer require bugo/flexgrid</pre>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" onclick="showPanel('grid-examples', this)">Grid Examples</button>
+    <button class="tab" onclick="showPanel('grid-presets', this)">Grid Presets</button>
+    <button class="tab" onclick="showPanel('flex-examples', this)">Flex Examples</button>
+    <button class="tab" onclick="showPanel('flex-presets', this)">Flex Presets</button>
+  </nav>
+
+  <main>
+
+    <div id="grid-examples" class="panel active">
+
+      <!-- 1. Simple 3-col -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">01</span>
+            Simple 3-Column Layout
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code1')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code1"><span class="cls">Grid</span><span class="op">::</span><span class="fn">columns</span>(<span class="num">3</span>, <span class="str">'.grid'</span>, <span class="str">'1.5rem'</span>)
+    <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.grid</span> {
+  <span class="kw">display</span>: grid;
+  <span class="kw">grid-template-columns</span>: repeat(3, 1fr);
+  <span class="kw">gap</span>: 1.5rem;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-cols3">
+            <div class="cell">col 1</div>
+            <div class="cell">col 2</div>
+            <div class="cell">col 3</div>
+            <div class="cell accent2">col 1</div>
+            <div class="cell accent2">col 2</div>
+            <div class="cell accent2">col 3</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Holy Grail -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">02</span>
+            Holy Grail Layout
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code2')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code2"><span class="cls">Grid</span><span class="op">::</span><span class="fn">holyGrail</span>(<span class="str">'.page'</span>)
+    <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.page</span> {
+  <span class="kw">display</span>: grid;
+  <span class="kw">grid-template-columns</span>: 200px 1fr 160px;
+  <span class="kw">grid-template-rows</span>: auto 1fr auto;
+  <span class="kw">grid-template-areas</span>:
+    <span class="str">"header  header  header"</span>
+    <span class="str">"sidebar main    aside"</span>
+    <span class="str">"footer  footer  footer"</span>;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-holygrail">
+            <div class="cell h">header</div>
+            <div class="cell s">sidebar</div>
+            <div class="cell m accent2">main</div>
+            <div class="cell a">aside</div>
+            <div class="cell f">footer</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Fluid -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">03</span>
+            Fluid Responsive Grid (auto-fill)
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code3')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code3"><span class="cls">Grid</span><span class="op">::</span><span class="fn">fluid</span>(<span class="str">'.cards'</span>, <span class="str">'280px'</span>)
+    <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.cards</span> {
+  <span class="kw">display</span>: grid;
+  <span class="kw">grid-template-columns</span>:
+    repeat(auto-fill, minmax(280px, 1fr));
+  <span class="kw">gap</span>: 1rem;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-fluid">
+            <div class="cell">card</div>
+            <div class="cell accent2">card</div>
+            <div class="cell">card</div>
+            <div class="cell accent3">card</div>
+            <div class="cell">card</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Gallery with spans -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">04</span>
+            Gallery with Line-Based Spans
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code4')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code4"><span class="cls">GridBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.gallery'</span>)
+  <span class="op">-></span><span class="fn">repeatColumns</span>(<span class="num">4</span>, <span class="cls">GridValue</span><span class="op">::</span><span class="fn">fr</span>(<span class="num">1</span>))
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">item</span>(
+    <span class="cls">GridItem</span><span class="op">::</span><span class="fn">select</span>(<span class="str">'.feature'</span>)
+      <span class="op">-></span><span class="fn">area</span>(<span class="cls">GridArea</span><span class="op">::</span><span class="fn">at</span>(<span class="num">1</span>, <span class="num">1</span>)
+        <span class="op">-></span><span class="fn">spanColumns</span>(<span class="num">2</span>)
+        <span class="op">-></span><span class="fn">spanRows</span>(<span class="num">2</span>))
+  )
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.gallery</span> {
+  <span class="kw">display</span>: grid;
+  <span class="kw">grid-template-columns</span>: repeat(4, 1fr);
+  <span class="kw">gap</span>: 1rem;
+}
+
+<span class="prop">.feature</span> {
+  <span class="kw">grid-row</span>: 1 / span 2;
+  <span class="kw">grid-column</span>: 1 / span 2;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-gallery">
+            <div class="cell accent2 feature">feature ×2×2</div>
+            <div class="cell">cell</div>
+            <div class="cell">cell</div>
+            <div class="cell">cell</div>
+            <div class="cell">cell</div>
+            <div class="cell accent3 wide">wide ×3</div>
+            <div class="cell">cell</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Responsive -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">05</span>
+            Responsive Breakpoints
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code5')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code5"><span class="cls">GridBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.layout'</span>)
+  <span class="op">-></span><span class="fn">columns</span>(<span class="str">'1fr'</span>)
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">responsive</span>(<span class="num">640</span>, <span class="kw">fn</span>(<span class="cls">GridBuilder</span> <span class="prop">$g</span>) <span class="kw">=></span>
+    <span class="prop">$g</span><span class="op">-></span><span class="fn">columns</span>(<span class="cls">GridValue</span><span class="op">::</span><span class="fn">repeat</span>(<span class="num">2</span>, <span class="cls">GridValue</span><span class="op">::</span><span class="fn">fr</span>(<span class="num">1</span>)))
+  )
+  <span class="op">-></span><span class="fn">responsive</span>(<span class="num">1024</span>, <span class="kw">fn</span>(<span class="cls">GridBuilder</span> <span class="prop">$g</span>) <span class="kw">=></span>
+    <span class="prop">$g</span><span class="op">-></span><span class="fn">columns</span>(<span class="cls">GridValue</span><span class="op">::</span><span class="fn">repeat</span>(<span class="num">3</span>, <span class="cls">GridValue</span><span class="op">::</span><span class="fn">fr</span>(<span class="num">1</span>)))
+      <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1.5rem'</span>)
+  )
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.layout</span> {
+  <span class="kw">display</span>: grid;
+  <span class="kw">grid-template-columns</span>: 1fr;
+  <span class="kw">gap</span>: 1rem;
+}
+<span class="cm">@media (min-width: 640px) {</span>
+  <span class="prop">.layout</span> {
+    <span class="kw">grid-template-columns</span>: repeat(2, 1fr);
+  }
+<span class="cm">}</span>
+<span class="cm">@media (min-width: 1024px) {</span>
+  <span class="prop">.layout</span> {
+    <span class="kw">grid-template-columns</span>: repeat(3, 1fr);
+    <span class="kw">gap</span>: 1.5rem;
+  }
+<span class="cm">}</span></pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview (mobile → tablet → desktop)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start">
+            <div>
+              <div style="font-size:clamp(0.55rem, 1.5vw, 0.65rem);color:var(--muted);margin-bottom:6px;font-family:monospace">mobile</div>
+              <div class="grid-demo" style="display:grid;grid-template-columns:1fr;gap:6px">
+                <div class="cell" style="min-height:30px">1</div>
+                <div class="cell" style="min-height:30px">2</div>
+                <div class="cell" style="min-height:30px">3</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:clamp(0.55rem, 1.5vw, 0.65rem);color:var(--muted);margin-bottom:6px;font-family:monospace">tablet</div>
+              <div class="grid-demo" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div class="cell" style="min-height:30px">1</div>
+                <div class="cell" style="min-height:30px">2</div>
+                <div class="cell accent2" style="min-height:30px">3</div>
+                <div class="cell accent2" style="min-height:30px">4</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:clamp(0.55rem, 1.5vw, 0.65rem);color:var(--muted);margin-bottom:6px;font-family:monospace">desktop</div>
+              <div class="grid-demo" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+                <div class="cell" style="min-height:30px">1</div>
+                <div class="cell" style="min-height:30px">2</div>
+                <div class="cell" style="min-height:30px">3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Inline Style -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">06</span>
+            Inline Style & GridValue Helpers
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code6')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre
+              id="code6"><span class="cm">// Inline style attribute</span>
+<span class="prop">$style</span> = <span class="cls">GridBuilder</span><span class="op">::</span><span class="fn">make</span>()
+  <span class="op">-></span><span class="fn">columns</span>(<span class="str">'1fr'</span>, <span class="str">'2fr'</span>)
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">autoRows</span>(
+    <span class="cls">GridValue</span><span class="op">::</span><span class="fn">minmax</span>(<span class="str">'100px'</span>, <span class="str">'auto'</span>)
+  )
+  <span class="op">-></span><span class="fn">toInlineStyle</span>();
+
+<span class="cm">// GridValue helpers</span>
+<span class="cls">GridValue</span><span class="op">::</span><span class="fn">fr</span>(<span class="num">1.5</span>);
+<span class="cls">GridValue</span><span class="op">::</span><span class="fn">minmax</span>(<span class="str">'200px'</span>,<span class="str">'1fr'</span>);
+<span class="cls">GridValue</span><span class="op">::</span><span class="fn">fitContent</span>(<span class="str">'300px'</span>);
+<span class="cls">GridValue</span><span class="op">::</span><span class="cls">Auto</span><span class="op">-></span><span class="kw">value</span>;</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">Output</div>
+            <pre><span class="cm">// $style =</span>
+<span class="str">"display: grid;
+ grid-template-columns: 1fr 2fr;
+ gap: 1rem;
+ grid-auto-rows: minmax(100px, auto)"</span>
+
+<span class="cm">// Use in HTML:</span>
+<span class="op">&lt;</span><span class="kw">div</span> <span class="fn">style</span><span class="op">="&lt;?=</span> <span class="prop">$style</span> <span class="op">?&gt;"&gt;</span></pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo"
+            style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;grid-auto-rows:minmax(60px,auto)">
+            <div class="cell">1fr</div>
+            <div class="cell accent2">2fr</div>
+            <div class="cell accent3" style="grid-column:1 / -1">minmax(100px, auto)</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid-examples -->
+
+    <div id="grid-presets" class="panel">
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem">
+
+        <!-- columns -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>columns</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">columns</span>(
+  <span class="num">int</span> <span class="prop">$n</span>,
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Equal N-column layout with gap</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+              <div class="cell" style="min-height:40px">1</div>
+              <div class="cell" style="min-height:40px">2</div>
+              <div class="cell accent2" style="min-height:40px">3</div>
+              <div class="cell accent2" style="min-height:40px">4</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- fluid -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>fluid</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">fluid</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$minWidth</span> <span class="op">=</span> <span class="str">'250px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">auto-fill responsive columns</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-fluid">
+              <div class="cell">item</div>
+              <div class="cell accent2">item</div>
+              <div class="cell">item</div>
+              <div class="cell accent3">item</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- holyGrail -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>holyGrail</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">holyGrail</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span>,
+  <span class="kw">string</span> <span class="prop">$sideWidth</span>  <span class="op">=</span> <span class="str">'200px'</span>,
+  <span class="kw">string</span> <span class="prop">$asideWidth</span> <span class="op">=</span> <span class="str">'160px'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Header/Sidebar/Main/Aside/Footer</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-holygrail">
+              <div class="cell h">header</div>
+              <div class="cell s">sidebar</div>
+              <div class="cell m accent2">main</div>
+              <div class="cell a">aside</div>
+              <div class="cell f">footer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- sidebar -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>sidebar</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">sidebar</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span>,
+  <span class="kw">string</span> <span class="prop">$sideWidth</span> <span class="op">=</span> <span class="str">'260px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1.5rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Fixed sidebar + fluid content</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo" style="display:grid;grid-template-columns:70px 1fr;gap:8px;min-height:80px">
+              <div class="cell" style="min-height:70px">nav</div>
+              <div class="cell accent2" style="min-height:70px">content</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- dashboard -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>dashboard</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">dashboard</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span>,
+  <span class="kw">string</span> <span class="prop">$sidebarWidth</span> <span class="op">=</span> <span class="str">'240px'</span>,
+  <span class="kw">string</span> <span class="prop">$headerHeight</span> <span class="op">=</span> <span class="str">'60px'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Header + Nav/Main + Footer</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-dashboard">
+              <div class="cell h">header</div>
+              <div class="cell n">nav</div>
+              <div class="cell m accent2">main</div>
+              <div class="cell f">footer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- centered -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>centered</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">centered</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span>,
+  <span class="kw">string</span> <span class="prop">$maxWidth</span> <span class="op">=</span> <span class="str">'720px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Centered max-width content</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo"
+              style="display:grid;grid-template-columns:1fr minmax(0,140px) 1fr;gap:6px;min-height:60px">
+              <div class="cell" style="min-height:50px;opacity:0.4">·</div>
+              <div class="cell accent2" style="min-height:50px">content</div>
+              <div class="cell" style="min-height:50px;opacity:0.4">·</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- masonry -->
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Grid::</span>masonry</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Grid</span><span class="op">::</span><span class="fn">masonry</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span>,
+  <span class="kw">string</span> <span class="prop">$minWidth</span> <span class="op">=</span> <span class="str">'220px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Dense auto-flow masonry-like grid</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-masonry"
+              style="display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:10px;gap:6px">
+              <div class="cell" style="grid-row:span 8">tall</div>
+              <div class="cell accent2" style="grid-row:span 5">med</div>
+              <div class="cell" style="grid-row:span 3">short</div>
+              <div class="cell accent3" style="grid-row:span 6">tall</div>
+              <div class="cell" style="grid-row:span 4">med</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /grid-presets -->
+
+    <div id="flex-examples" class="panel">
+
+      <!-- 1. Row -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">01</span>
+            Flex Row with Gap
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code7')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code7"><span class="cls">Flex</span><span class="op">::</span><span class="fn">row</span>(<span class="str">'.menu'</span>, <span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.menu</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-direction</span>: row;
+  <span class="kw">gap</span>: 1rem;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-flex-row">
+            <div class="cell">home</div>
+            <div class="cell accent2">docs</div>
+            <div class="cell">pricing</div>
+            <div class="cell accent3">blog</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Cards -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">02</span>
+            Flex Cards with Wrap
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code8')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code8"><span class="cls">Flex</span><span class="op">::</span><span class="fn">cards</span>(<span class="str">'.cards'</span>, <span class="str">'240px'</span>, <span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.cards</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-flow</span>: row wrap;
+  <span class="kw">gap</span>: 1rem;
+}
+
+<span class="prop">.cards > *</span> {
+  <span class="kw">flex</span>: 1 1 240px;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo demo-flex-cards">
+            <div class="cell">card</div>
+            <div class="cell accent2">card</div>
+            <div class="cell">card</div>
+            <div class="cell accent3">card</div>
+            <div class="cell">card</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Toolbar align -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">03</span>
+            Toolbar Alignment
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code9')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code9"><span class="cls">FlexBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.toolbar'</span>)
+  <span class="op">-></span><span class="fn">direction</span>(<span class="cls">FlexDirection</span><span class="op">::</span><span class="cls">Row</span>)
+  <span class="op">-></span><span class="fn">justifyContent</span>(<span class="cls">ContentAlignment</span><span class="op">::</span><span class="cls">SpaceBetween</span>)
+  <span class="op">-></span><span class="fn">alignItems</span>(<span class="cls">ItemAlignment</span><span class="op">::</span><span class="cls">Center</span>)
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.toolbar</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-direction</span>: row;
+  <span class="kw">justify-content</span>: space-between;
+  <span class="kw">align-items</span>: center;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo"
+            style="display:flex;justify-content:space-between;align-items:center;min-height:70px;gap:8px">
+            <div class="cell">logo</div>
+            <div class="cell accent2">search</div>
+            <div class="cell">actions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Responsive -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">04</span>
+            Responsive Flex Direction
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code10')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code10"><span class="cls">FlexBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.layout'</span>)
+  <span class="op">-></span><span class="fn">direction</span>(<span class="cls">FlexDirection</span><span class="op">::</span><span class="cls">Column</span>)
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1rem'</span>)
+  <span class="op">-></span><span class="fn">responsive</span>(<span class="num">768</span>, <span class="kw">fn</span>(<span class="cls">FlexBuilder</span> <span class="prop">$f</span>) <span class="kw">=></span>
+    <span class="prop">$f</span><span class="op">-></span><span class="fn">direction</span>(<span class="cls">FlexDirection</span><span class="op">::</span><span class="cls">Row</span>)
+  )
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.layout</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-direction</span>: column;
+  <span class="kw">gap</span>: 1rem;
+}
+<span class="cm">@media (min-width: 768px) {</span>
+  <span class="prop">.layout</span> { <span class="kw">flex-direction</span>: row; }
+<span class="cm">}</span></pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div style="font-size:clamp(0.55rem, 1.5vw, 0.65rem);color:var(--muted);margin-bottom:6px;font-family:monospace">mobile</div>
+              <div class="grid-demo" style="display:flex;flex-direction:column;gap:6px">
+                <div class="cell" style="min-height:30px">1</div>
+                <div class="cell accent2" style="min-height:30px">2</div>
+                <div class="cell" style="min-height:30px">3</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:clamp(0.55rem, 1.5vw, 0.65rem);color:var(--muted);margin-bottom:6px;font-family:monospace">desktop</div>
+              <div class="grid-demo" style="display:flex;flex-direction:row;gap:6px">
+                <div class="cell" style="min-height:30px;flex:1 1 0">1</div>
+                <div class="cell accent2" style="min-height:30px;flex:1 1 0">2</div>
+                <div class="cell" style="min-height:30px;flex:1 1 0">3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Helpers -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">05</span>
+            Reverse, noWrap and Gap Override
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code11')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code11"><span class="cls">FlexBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.rail'</span>)
+  <span class="op">-></span><span class="fn">direction</span>(<span class="cls">FlexDirection</span><span class="op">::</span><span class="cls">ColumnReverse</span>)
+  <span class="op">-></span><span class="fn">noWrap</span>()       <span class="cm">// nowrap</span>
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'0.5rem'</span>)
+  <span class="op">-></span><span class="fn">gap</span>(<span class="str">'1rem'</span>)    <span class="cm">// last call wins</span>
+  <span class="op">-></span><span class="fn">build</span>();</pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.rail</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-flow</span>: column-reverse nowrap;
+  <span class="kw">gap</span>: 1rem;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo" style="display:flex;flex-direction:column-reverse;flex-wrap:nowrap;gap:8px">
+            <div class="cell">1</div>
+            <div class="cell accent2">2</div>
+            <div class="cell">3</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Builder helpers -->
+      <div class="example">
+        <div class="example-header">
+          <div class="example-title">
+            <span class="example-num">06</span>
+            FlexBuilder Helpers
+          </div>
+          <button class="copy-btn" onclick="copyCode(this, 'code12')">copy</button>
+        </div>
+        <div class="example-body">
+          <div class="code-pane">
+            <div class="pane-label">PHP</div>
+            <pre id="code12"><span class="cls">FlexBuilder</span><span class="op">::</span><span class="fn">make</span>(<span class="str">'.list'</span>)
+  <span class="op">-></span><span class="fn">direction</span>(<span class="cls">FlexDirection</span><span class="op">::</span><span class="cls">RowReverse</span>)
+  <span class="op">-></span><span class="fn">wrapReverse</span>(); <span class="cm">// wrap-reverse</span>
+
+<span class="cm">// noWrap() == wrap(FlexWrap::NoWrap)</span>
+<span class="cm">// gap(...)->gap(...) -> last value wins</span></pre>
+          </div>
+          <div class="code-pane">
+            <div class="pane-label">CSS output</div>
+            <pre><span class="prop">.list</span> {
+  <span class="kw">display</span>: flex;
+  <span class="kw">flex-flow</span>: row-reverse wrap-reverse;
+}</pre>
+          </div>
+        </div>
+        <div class="preview-pane">
+          <div class="pane-label">Preview</div>
+          <div class="grid-demo" style="display:flex;flex-direction:row-reverse;flex-wrap:wrap-reverse;gap:6px">
+            <div class="cell">A</div>
+            <div class="cell accent2">B</div>
+            <div class="cell">C</div>
+            <div class="cell accent3">D</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /flex-examples -->
+
+    <div id="flex-presets" class="panel">
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem">
+
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Flex::</span>row</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Flex</span><span class="op">::</span><span class="fn">row</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Horizontal flow with gap</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-flex-row">
+              <div class="cell">a</div>
+              <div class="cell accent2">b</div>
+              <div class="cell">c</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Flex::</span>column</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Flex</span><span class="op">::</span><span class="fn">column</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Vertical stack</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo" style="display:flex;flex-direction:column;gap:6px">
+              <div class="cell">header</div>
+              <div class="cell accent2">content</div>
+              <div class="cell">footer</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Flex::</span>cards</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Flex</span><span class="op">::</span><span class="fn">cards</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$minWidth</span> <span class="op">=</span> <span class="str">'250px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">Wrapping cards + child flex basis</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-flex-cards">
+              <div class="cell">item</div>
+              <div class="cell accent2">item</div>
+              <div class="cell">item</div>
+              <div class="cell accent3">item</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <div class="example-title"><span class="example-num fn">Flex::</span>sidebar</div>
+          </div>
+          <div class="code-pane">
+            <pre><span class="cls">Flex</span><span class="op">::</span><span class="fn">sidebar</span>(
+  <span class="kw">string</span> <span class="prop">$selector</span> <span class="op">=</span> <span class="str">''</span>,
+  <span class="kw">string</span> <span class="prop">$sideWidth</span> <span class="op">=</span> <span class="str">'260px'</span>,
+  <span class="kw">string</span> <span class="prop">$gap</span> <span class="op">=</span> <span class="str">'1.5rem'</span>
+);</pre>
+            <div style="margin-top:1rem" class="pane-label">First child fixed, last child fluid</div>
+          </div>
+          <div class="preview-pane">
+            <div class="grid-demo demo-flex-sidebar">
+              <div class="cell side">side</div>
+              <div class="cell accent2 main">content</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /flex-presets -->
+
+  </main>
+
+
+  <script>
+    function showPanel(id, tab) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      tab.classList.add('active');
+    }
+
+    function copyCode(btn, id) {
+      const el = document.getElementById(id);
+      const text = el.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+      });
+    }
+  </script>
+</body>
+
+</html>
