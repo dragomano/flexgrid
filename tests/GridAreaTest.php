@@ -32,6 +32,22 @@ describe('GridArea', function () {
         expect($props['grid-row'])->toBe('1 / 4');
     });
 
+    it('builds span-only placement without start lines', function () {
+        $props = (new GridArea())->spanRows(2)->spanColumns(3)->build();
+        expect($props['grid-row'])->toBe('span 2')
+            ->and($props['grid-column'])->toBe('span 3');
+    });
+
+    it('builds end-only placement without start lines', function () {
+        $props = (new GridArea())->rowEnd(4)->columnEnd(5)->build();
+        expect($props['grid-row'])->toBe('auto / 4')
+            ->and($props['grid-column'])->toBe('auto / 5');
+    });
+
+    it('returns empty properties when nothing is set', function () {
+        expect((new GridArea())->build())->toBe([]);
+    });
+
     it('outputs inline CSS via toCss()', function () {
         $css = GridArea::named('main')->toCss();
         expect($css)->toContain('grid-area: main');

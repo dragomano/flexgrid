@@ -22,16 +22,34 @@ describe('GridItem', function () {
             ->and($props['grid-column'])->toBe('2 / auto');
     });
 
-    it('creates area implicitly in span()', function () {
+    it('creates span-only placement when no area exists', function () {
         $props = GridItem::select('.tile')->span(2, 4)->buildProperties();
-        expect($props)->toBe([]);
+        expect($props['grid-row'])->toBe('span 2')
+            ->and($props['grid-column'])->toBe('span 4');
     });
 
     it('span() creates area when none exists', function () {
         $item = GridItem::select('.tile');
         $item->span(2, 3);
         $props = $item->buildProperties();
-        expect($props)->toBe([]);
+        expect($props['grid-row'])->toBe('span 2')
+            ->and($props['grid-column'])->toBe('span 3');
+    });
+
+    it('combines place() with span()', function () {
+        $props = GridItem::select('.tile')->place(2, 1)->span(3, 2)->buildProperties();
+        expect($props['grid-row'])->toBe('2 / span 3')
+            ->and($props['grid-column'])->toBe('1 / span 2');
+    });
+
+    it('combines area() with span()', function () {
+        $props = GridItem::select('.tile')
+            ->area(GridArea::at(1, 1))
+            ->span(2, 4)
+            ->buildProperties();
+
+        expect($props['grid-row'])->toBe('1 / span 2')
+            ->and($props['grid-column'])->toBe('1 / span 4');
     });
 
     it('sets named area', function () {

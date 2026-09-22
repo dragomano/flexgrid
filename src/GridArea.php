@@ -116,24 +116,16 @@ final class GridArea
 
         $properties = [];
 
-        if ($this->rowStart !== null) {
-            $rowEndValue = match (true) {
-                $this->rowEnd  !== null => "$this->rowEnd",
-                $this->rowSpan !== null => "span $this->rowSpan",
-                default                 => 'auto',
-            };
+        $row = $this->buildAxis($this->rowStart, $this->rowEnd, $this->rowSpan);
 
-            $properties['grid-row'] = "$this->rowStart / $rowEndValue";
+        if ($row !== null) {
+            $properties['grid-row'] = $row;
         }
 
-        if ($this->columnStart !== null) {
-            $colEndValue = match (true) {
-                $this->columnEnd  !== null => "$this->columnEnd",
-                $this->columnSpan !== null => "span $this->columnSpan",
-                default                    => 'auto',
-            };
+        $column = $this->buildAxis($this->columnStart, $this->columnEnd, $this->columnSpan);
 
-            $properties['grid-column'] = "$this->columnStart / $colEndValue";
+        if ($column !== null) {
+            $properties['grid-column'] = $column;
         }
 
         return $properties;
@@ -146,5 +138,28 @@ final class GridArea
             array_keys($this->build()),
             $this->build()
         ));
+    }
+
+    private function buildAxis(int|string|null $start, int|string|null $end, ?int $span): ?string
+    {
+        if ($start !== null) {
+            $endValue = match (true) {
+                $end  !== null => "$end",
+                $span !== null => "span $span",
+                default        => 'auto',
+            };
+
+            return "$start / $endValue";
+        }
+
+        if ($span !== null) {
+            return "span $span";
+        }
+
+        if ($end !== null) {
+            return "auto / $end";
+        }
+
+        return null;
     }
 }
