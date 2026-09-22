@@ -12,6 +12,8 @@ use FlexGrid\Enums\ItemAlignment;
  */
 abstract class AbstractItem implements CssItem
 {
+    use RendersCssRule;
+
     public function __construct(private readonly string $selector = '') {}
 
     public static function select(string $selector): static
@@ -29,32 +31,9 @@ abstract class AbstractItem implements CssItem
         return $this->selector;
     }
 
-    public function toCss(string $indent = '  '): string
+    public function toCss(string $indent = ''): string
     {
-        /** @var array<string, string> $props */
-        $props = $this->buildProperties();
-
-        if ($props === []) {
-            return '';
-        }
-
-        $keys   = [];
-        $values = [];
-
-        foreach ($props as $prop => $val) {
-            $keys[]   = $prop;
-            $values[] = $val;
-        }
-
-        $lines = array_map(
-            static fn(string $prop, string $val): string => "$indent$prop: $val;",
-            $keys,
-            $values
-        );
-
-        return $this->selector !== ''
-            ? "$this->selector {\n" . implode("\n", $lines) . "\n}"
-            : implode("\n", $lines);
+        return $this->renderRule($this->selector, $this->buildProperties(), $indent);
     }
 
     /**

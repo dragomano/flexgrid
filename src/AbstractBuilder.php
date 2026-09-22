@@ -12,6 +12,8 @@ use FlexGrid\Enums\ContentAlignment;
  */
 abstract class AbstractBuilder
 {
+    use RendersCssRule;
+
     private readonly CssItemList $items;
 
     private readonly BreakpointVariantList $variants;
@@ -101,11 +103,11 @@ abstract class AbstractBuilder
         return $this;
     }
 
-    public function build(string $indent = '  '): string
+    public function build(string $indent = ''): string
     {
         $parts = [];
 
-        $parts[] = $this->buildRule($this->selector, $this->buildProperties(), $indent);
+        $parts[] = $this->renderRule($this->selector, $this->buildProperties(), $indent);
 
         foreach ($this->items as $item) {
             if ($item->getSelector() === '') {
@@ -121,7 +123,8 @@ abstract class AbstractBuilder
             $groupedVariants[$entry->query][] = $entry->variant;
         }
 
-        $baseProps = $this->buildProperties();
+        $baseProps   = $this->buildProperties();
+        $innerIndent = $indent . '  ';
 
         foreach ($groupedVariants as $query => $variants) {
             $mediaQuery = str_contains($query, '(')
@@ -133,7 +136,7 @@ abstract class AbstractBuilder
             foreach ($variants as $variant) {
                 $variantProps = array_diff_assoc($variant->buildProperties(), $baseProps);
 
-                $rule = $variant->buildRule($variant->selector, $variantProps, $indent . '  ');
+                $rule = $variant->renderRule($variant->selector, $variantProps, $innerIndent);
 
                 if ($rule !== '') {
                     $innerParts[] = $rule;
@@ -144,7 +147,7 @@ abstract class AbstractBuilder
                         continue;
                     }
 
-                    $innerParts[] = $item->toCss($indent . '  ');
+                    $innerParts[] = $item->toCss($innerIndent);
                 }
             }
 
@@ -154,7 +157,7 @@ abstract class AbstractBuilder
 
             $inner = implode("\n\n", $innerParts);
 
-            $parts[] = "@media $mediaQuery {\n$inner\n}";
+            $parts[] = "$indent@media $mediaQuery {\n$inner\n$indent}";
         }
 
         return implode("\n\n", array_filter($parts));
@@ -185,23 +188,9 @@ abstract class AbstractBuilder
     }
 
     /** @param array<string, string> $props */
-    protected function buildRule(string $selector, array $props, string $indent): string
+    protected function buildRule(string $selector, array $props, string $indent = ''): string
     {
-        if (empty($props)) {
-            return '';
-        }
-
-        $lines = [];
-
-        foreach ($props as $prop => $val) {
-            $lines[] = "$indent$prop: $val;";
-        }
-
-        $block = implode("\n", $lines);
-
-        return $selector
-            ? "$selector {\n$block\n}"
-            : $block;
+        return $this->renderRule($selector, $props, $indent);
     }
 
     /**

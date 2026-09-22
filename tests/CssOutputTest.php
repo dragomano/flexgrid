@@ -31,9 +31,9 @@ describe('Exact CSS output', function () {
         }
 
         @media (min-width: 768px) {
-        .page {
+          .page {
             grid-template-columns: 1fr;
-        }
+          }
         }
         CSS;
 
@@ -58,17 +58,17 @@ describe('Exact CSS output', function () {
         }
 
         @media (min-width: 768px) {
-        .bar {
+          .bar {
             gap: 2rem;
-        }
+          }
 
-        .bar {
+          .bar {
             justify-content: space-between;
-        }
+          }
 
-        .bar > .item {
+          .bar > .item {
             flex-grow: 1;
-        }
+          }
         }
         CSS;
 
