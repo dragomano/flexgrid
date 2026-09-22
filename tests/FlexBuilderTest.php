@@ -113,6 +113,20 @@ describe('FlexBuilder', function () {
             ->and($css)->toContain('flex-wrap: wrap;');
     });
 
+    it('omits unchanged base properties from media blocks', function () {
+        $css = FlexBuilder::make('.layout')
+            ->direction(FlexDirection::Column)
+            ->gap('1rem')
+            ->responsive(768, fn(FlexBuilder $f) => $f->direction(FlexDirection::Row))
+            ->build();
+
+        $mediaBlock = substr($css, strpos($css, '@media'));
+
+        expect($mediaBlock)->not->toContain('display: flex;')
+            ->and($mediaBlock)->not->toContain('gap: 1rem;')
+            ->and($mediaBlock)->toContain('flex-direction: row;');
+    });
+
     it('includes responsive item rules inside media blocks', function () {
         $css = FlexBuilder::make('.layout')
             ->responsive(1024, fn(FlexBuilder $f) => $f->item(FlexItem::select('.layout__side')->flex(0, 0, '280px')))

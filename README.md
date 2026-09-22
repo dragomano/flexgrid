@@ -195,6 +195,13 @@ GridBuilder::make('.gallery')
 .gallery__tall  { grid-row: 1 / 4;      grid-column: 4 / auto;   }
 ```
 
+Line-based placement comes in two forms that must not be mixed on the same item:
+
+- Area placement via `area()`, `place()`, `namedArea()` or `span()` (emits the `grid-row`/`grid-column`/`grid-area` shorthands).
+- Individual line properties via `rowStart()`, `rowEnd()`, `columnStart()`, `columnEnd()` (emits the `grid-*-start`/`grid-*-end` longhands).
+
+Combining the two on one `GridItem` throws an `InvalidArgumentException` at configuration time, so an ambiguous placement never reaches the generated CSS. Likewise, a named `GridArea` and line-based coordinates are mutually exclusive: calling `rowStart()`, `columnEnd()`, `spanRows()` and friends on `GridArea::named(...)` throws.
+
 ### Alignment
 
 Grid alignment is split into two enums:
@@ -287,6 +294,8 @@ GridBuilder::make('.layout')
   .layout { grid-auto-flow: row; }
 }
 ```
+
+Each variant is configured from scratch, but only the properties that actually differ from the base container are emitted inside the `@media` block. Unchanged declarations (such as `display`) are dropped, and a variant that changes nothing produces no `@media` block at all.
 
 ### Inline styles
 

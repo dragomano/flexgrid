@@ -121,6 +121,8 @@ abstract class AbstractBuilder
             $groupedVariants[$entry->query][] = $entry->variant;
         }
 
+        $baseProps = $this->buildProperties();
+
         foreach ($groupedVariants as $query => $variants) {
             $mediaQuery = str_contains($query, '(')
                 ? $query
@@ -129,11 +131,13 @@ abstract class AbstractBuilder
             $innerParts = [];
 
             foreach ($variants as $variant) {
-                $innerParts[] = $variant->buildRule(
-                    $variant->selector,
-                    $variant->buildProperties(),
-                    $indent . '  '
-                );
+                $variantProps = array_diff_assoc($variant->buildProperties(), $baseProps);
+
+                $rule = $variant->buildRule($variant->selector, $variantProps, $indent . '  ');
+
+                if ($rule !== '') {
+                    $innerParts[] = $rule;
+                }
 
                 foreach ($variant->items as $item) {
                     if ($item->getSelector() === '') {
@@ -142,6 +146,10 @@ abstract class AbstractBuilder
 
                     $innerParts[] = $item->toCss($indent . '  ');
                 }
+            }
+
+            if ($innerParts === []) {
+                continue;
             }
 
             $inner = implode("\n\n", $innerParts);

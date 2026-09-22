@@ -84,4 +84,34 @@ describe('GridArea', function () {
         expect($props['grid-row'])->toBe('1 / 3')
             ->and($props['grid-column'])->toBe('1 / 4');
     });
+
+    it('rejects rowStart on a named area', function () {
+        expect(fn() => GridArea::named('main')->rowStart(2))
+            ->toThrow(InvalidArgumentException::class, 'Cannot combine a named grid area with line-based placement.');
+    });
+
+    it('rejects rowEnd on a named area', function () {
+        expect(fn() => GridArea::named('main')->rowEnd(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects columnStart on a named area', function () {
+        expect(fn() => GridArea::named('main')->columnStart(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects columnEnd on a named area', function () {
+        expect(fn() => GridArea::named('main')->columnEnd(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects spanRows on a named area', function () {
+        expect(fn() => GridArea::named('main')->spanRows(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects spanColumns on a named area', function () {
+        expect(fn() => GridArea::named('main')->spanColumns(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
 });

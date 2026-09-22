@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlexGrid;
 
 use FlexGrid\Enums\ItemAlignment;
+use InvalidArgumentException;
 
 /**
  * Represents a single grid item (child element) with its placement and self-alignment.
@@ -29,6 +30,8 @@ final class GridItem extends AbstractItem
 
     public function area(GridArea $area): self
     {
+        $this->assertNoLineProperties();
+
         $this->area = $area;
 
         return $this;
@@ -36,6 +39,8 @@ final class GridItem extends AbstractItem
 
     public function place(int $row, int $col): self
     {
+        $this->assertNoLineProperties();
+
         $this->area = GridArea::at($row, $col);
 
         return $this;
@@ -43,6 +48,8 @@ final class GridItem extends AbstractItem
 
     public function span(int $rowSpan, int $colSpan): self
     {
+        $this->assertNoLineProperties();
+
         if ($this->area === null) {
             $this->area = new GridArea();
         }
@@ -54,6 +61,8 @@ final class GridItem extends AbstractItem
 
     public function namedArea(string $name): self
     {
+        $this->assertNoLineProperties();
+
         $this->area = GridArea::named($name);
 
         return $this;
@@ -90,6 +99,8 @@ final class GridItem extends AbstractItem
 
     public function rowStart(int|string $line): self
     {
+        $this->assertNoArea();
+
         $this->rowStart = $line;
 
         return $this;
@@ -97,6 +108,8 @@ final class GridItem extends AbstractItem
 
     public function rowEnd(int|string $line): self
     {
+        $this->assertNoArea();
+
         $this->rowEnd = $line;
 
         return $this;
@@ -104,6 +117,8 @@ final class GridItem extends AbstractItem
 
     public function columnStart(int|string $line): self
     {
+        $this->assertNoArea();
+
         $this->columnStart = $line;
 
         return $this;
@@ -111,6 +126,8 @@ final class GridItem extends AbstractItem
 
     public function columnEnd(int|string $line): self
     {
+        $this->assertNoArea();
+
         $this->columnEnd = $line;
 
         return $this;
@@ -151,5 +168,28 @@ final class GridItem extends AbstractItem
         }
 
         return $props;
+    }
+
+    private function assertNoLineProperties(): void
+    {
+        if (
+            $this->rowStart !== null
+            || $this->rowEnd !== null
+            || $this->columnStart !== null
+            || $this->columnEnd !== null
+        ) {
+            throw new InvalidArgumentException(
+                'Cannot combine area placement with individual line properties.'
+            );
+        }
+    }
+
+    private function assertNoArea(): void
+    {
+        if ($this->area !== null) {
+            throw new InvalidArgumentException(
+                'Cannot combine individual line properties with area placement.'
+            );
+        }
     }
 }

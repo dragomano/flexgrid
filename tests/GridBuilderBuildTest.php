@@ -94,6 +94,29 @@ describe('GridBuilder::build()', function () {
         expect($css)->toContain('@media (prefers-reduced-motion: reduce)');
     });
 
+    it('omits unchanged base properties from media blocks', function () {
+        $css = GridBuilder::make('.layout')
+            ->columns('1fr')
+            ->gap('1rem')
+            ->responsive(768, fn(GridBuilder $g) => $g->columns('1fr', '1fr'))
+            ->build();
+
+        $mediaBlock = substr($css, strpos($css, '@media'));
+
+        expect($mediaBlock)->not->toContain('display: grid;')
+            ->and($mediaBlock)->not->toContain('gap: 1rem;')
+            ->and($mediaBlock)->toContain('grid-template-columns: 1fr 1fr;');
+    });
+
+    it('skips a media block when the variant changes nothing', function () {
+        $css = GridBuilder::make('.layout')
+            ->columns('1fr')
+            ->responsive(768, fn(GridBuilder $g) => $g->columns('1fr'))
+            ->build();
+
+        expect($css)->not->toContain('@media');
+    });
+
     it('includes responsive item rules inside media blocks', function () {
         $css = GridBuilder::make('.layout')
             ->responsive(1024, fn(GridBuilder $g) => $g->item(GridItem::select('.layout__side')->namedArea('side')))

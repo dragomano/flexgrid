@@ -132,6 +132,46 @@ describe('GridItem', function () {
             ->and($props)->not->toHaveKey('justify-self');
     });
 
+    it('rejects area() after individual line properties', function () {
+        expect(fn() => GridItem::select('.box')->rowStart(2)->area(GridArea::at(1, 1)))
+            ->toThrow(InvalidArgumentException::class, 'Cannot combine area placement with individual line properties.');
+    });
+
+    it('rejects place() after individual line properties', function () {
+        expect(fn() => GridItem::select('.box')->columnStart(2)->place(1, 1))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects namedArea() after individual line properties', function () {
+        expect(fn() => GridItem::select('.box')->rowEnd(4)->namedArea('main'))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects span() after individual line properties', function () {
+        expect(fn() => GridItem::select('.box')->columnEnd(4)->span(2, 2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects rowStart() after area placement', function () {
+        expect(fn() => GridItem::select('.box')->namedArea('main')->rowStart(2))
+            ->toThrow(InvalidArgumentException::class, 'Cannot combine individual line properties with area placement.');
+    });
+
+    it('rejects rowEnd() after area placement', function () {
+        expect(fn() => GridItem::select('.box')->place(1, 1)->rowEnd(3))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects columnStart() after area placement', function () {
+        expect(fn() => GridItem::select('.box')->area(GridArea::at(1, 1))->columnStart(2))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects columnEnd() after area placement', function () {
+        expect(fn() => GridItem::select('.box')->span(2, 2)->columnEnd(3))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
     it('returns selector', function () {
         expect(GridItem::select('.foo')->getSelector())->toBe('.foo');
     });

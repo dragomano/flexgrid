@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlexGrid;
 
+use InvalidArgumentException;
+
 /**
  * Represents a CSS grid-area placement for an item.
  * Supports both named areas and line-based placement.
@@ -59,6 +61,8 @@ final class GridArea
 
     public function rowStart(int|string $line): self
     {
+        $this->assertLineAllowed();
+
         $this->rowStart = $line;
 
         return $this;
@@ -66,6 +70,8 @@ final class GridArea
 
     public function rowEnd(int|string $line): self
     {
+        $this->assertLineAllowed();
+
         $this->rowEnd = $line;
         $this->rowSpan = null;
 
@@ -74,6 +80,8 @@ final class GridArea
 
     public function columnStart(int|string $line): self
     {
+        $this->assertLineAllowed();
+
         $this->columnStart = $line;
 
         return $this;
@@ -81,6 +89,8 @@ final class GridArea
 
     public function columnEnd(int|string $line): self
     {
+        $this->assertLineAllowed();
+
         $this->columnEnd = $line;
         $this->columnSpan = null;
 
@@ -89,6 +99,8 @@ final class GridArea
 
     public function spanRows(int $span): self
     {
+        $this->assertLineAllowed();
+
         $this->rowSpan = $span;
         $this->rowEnd  = null;
 
@@ -97,6 +109,8 @@ final class GridArea
 
     public function spanColumns(int $span): self
     {
+        $this->assertLineAllowed();
+
         $this->columnSpan = $span;
         $this->columnEnd  = null;
 
@@ -161,5 +175,14 @@ final class GridArea
         }
 
         return null;
+    }
+
+    private function assertLineAllowed(): void
+    {
+        if ($this->name !== null) {
+            throw new InvalidArgumentException(
+                'Cannot combine a named grid area with line-based placement.'
+            );
+        }
     }
 }
