@@ -100,6 +100,7 @@ final class GridArea
     public function spanRows(int $span): self
     {
         $this->assertLineAllowed();
+        $this->assertPositiveSpan($span);
 
         $this->rowSpan = $span;
         $this->rowEnd  = null;
@@ -110,6 +111,7 @@ final class GridArea
     public function spanColumns(int $span): self
     {
         $this->assertLineAllowed();
+        $this->assertPositiveSpan($span);
 
         $this->columnSpan = $span;
         $this->columnEnd  = null;
@@ -183,6 +185,13 @@ final class GridArea
             throw new InvalidArgumentException(
                 'Cannot combine a named grid area with line-based placement.'
             );
+        }
+    }
+
+    private function assertPositiveSpan(int $span): void
+    {
+        if ($span < 1) {
+            throw new InvalidArgumentException('Span must be a positive integer.');
         }
     }
 }

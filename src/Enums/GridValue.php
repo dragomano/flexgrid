@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlexGrid\Enums;
 
+use InvalidArgumentException;
+
 enum GridValue: string
 {
     case Auto        = 'auto';
@@ -18,6 +20,10 @@ enum GridValue: string
 
     public static function fr(float $n): string
     {
+        if ($n < 0) {
+            throw new InvalidArgumentException('Fraction unit must not be negative.');
+        }
+
         return "{$n}fr";
     }
 
@@ -28,6 +34,10 @@ enum GridValue: string
 
     public static function repeat(int|string $count, string $track = '1fr'): string
     {
+        if (is_int($count) && $count < 1) {
+            throw new InvalidArgumentException('Repeat count must be a positive integer.');
+        }
+
         return "repeat($count, $track)";
     }
 

@@ -114,4 +114,14 @@ describe('GridArea', function () {
         expect(fn() => GridArea::named('main')->spanColumns(2))
             ->toThrow(InvalidArgumentException::class);
     });
+
+    it('rejects zero row span', function () {
+        expect(fn() => (new GridArea())->spanRows(0))
+            ->toThrow(InvalidArgumentException::class, 'Span must be a positive integer.');
+    });
+
+    it('rejects negative column span', function () {
+        expect(fn() => (new GridArea())->spanColumns(-2))
+            ->toThrow(InvalidArgumentException::class, 'Span must be a positive integer.');
+    });
 });

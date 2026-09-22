@@ -52,4 +52,24 @@ describe('FlexItem', function () {
     it('returns empty css when no properties are set', function () {
         expect(FlexItem::select('.empty')->toCss())->toBe('');
     });
+
+    it('rejects negative flex-grow', function () {
+        expect(fn() => FlexItem::select('.card')->grow(-1))
+            ->toThrow(InvalidArgumentException::class, 'The flex-grow value must not be negative.');
+    });
+
+    it('rejects negative flex-shrink', function () {
+        expect(fn() => FlexItem::select('.card')->shrink(-0.5))
+            ->toThrow(InvalidArgumentException::class, 'The flex-shrink value must not be negative.');
+    });
+
+    it('rejects negative grow in flex shorthand', function () {
+        expect(fn() => FlexItem::select('.card')->flex(-1, 1, '240px'))
+            ->toThrow(InvalidArgumentException::class, 'The flex-grow value must not be negative.');
+    });
+
+    it('rejects negative shrink in flex shorthand', function () {
+        expect(fn() => FlexItem::select('.card')->flex(1, -1, '240px'))
+            ->toThrow(InvalidArgumentException::class, 'The flex-shrink value must not be negative.');
+    });
 });

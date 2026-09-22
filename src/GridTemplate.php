@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FlexGrid;
 
+use InvalidArgumentException;
+
 /**
  * Fluent builder for CSS grid-template-areas.
  *
@@ -31,6 +33,18 @@ final class GridTemplate
      */
     public function row(array $areas): self
     {
+        if ($areas === []) {
+            throw new InvalidArgumentException('Grid template row must not be empty.');
+        }
+
+        foreach ($areas as $cell) {
+            $this->assertValidCell($cell);
+        }
+
+        if ($this->rows !== [] && count($areas) !== count($this->rows[0])) {
+            throw new InvalidArgumentException('All grid template rows must have the same number of columns.');
+        }
+
         $this->rows[] = $areas;
 
         return $this;
@@ -101,5 +115,16 @@ final class GridTemplate
     public function rowCount(): int
     {
         return count($this->rows);
+    }
+
+    private function assertValidCell(string $cell): void
+    {
+        if ($cell === '') {
+            throw new InvalidArgumentException('Grid area cell must be a non-empty string.');
+        }
+
+        if (strpbrk($cell, " \t\n\r\f\v") !== false || str_contains($cell, '"')) {
+            throw new InvalidArgumentException("Invalid grid area name: \"$cell\".");
+        }
     }
 }

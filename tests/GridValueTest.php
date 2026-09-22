@@ -31,4 +31,27 @@ describe('GridValue', function () {
             ->and(GridValue::MaxContent->value)->toBe('max-content')
             ->and(GridValue::MinContent->value)->toBe('min-content');
     });
+
+    it('allows zero fraction unit', function () {
+        expect(GridValue::fr(0))->toBe('0fr');
+    });
+
+    it('rejects negative fraction unit', function () {
+        expect(fn() => GridValue::fr(-1))
+            ->toThrow(InvalidArgumentException::class, 'Fraction unit must not be negative.');
+    });
+
+    it('rejects zero repeat count', function () {
+        expect(fn() => GridValue::repeat(0))
+            ->toThrow(InvalidArgumentException::class, 'Repeat count must be a positive integer.');
+    });
+
+    it('rejects negative repeat count', function () {
+        expect(fn() => GridValue::repeat(-3))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('allows keyword repeat counts', function () {
+        expect(GridValue::repeat('auto-fit', '1fr'))->toBe('repeat(auto-fit, 1fr)');
+    });
 });

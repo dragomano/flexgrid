@@ -668,6 +668,40 @@ Repeated `gap(...)` calls do not accumulate: the last call replaces the previous
 
 ---
 
+## Validation and errors
+
+Configuration is validated eagerly: invalid input throws an `InvalidArgumentException` when you call the method, not later during CSS generation.
+
+### Numeric constraints
+
+| Method | Rule |
+|---|---|
+| `GridValue::fr($n)` | `$n` must not be negative (`0fr` is allowed). |
+| `GridValue::repeat($count, ...)` | an integer `$count` must be `>= 1`; keyword counts like `auto-fill`/`auto-fit` are passed through. |
+| `GridBuilder::repeatColumns()` / `repeatRows()`, `Grid::columns()` | column/row count must be `>= 1`. |
+| `GridArea::spanRows()` / `spanColumns()`, `GridItem::span()` | span must be `>= 1`. |
+| `FlexItem::grow()` / `shrink()` / `flex()` | grow and shrink must not be negative (`0` is allowed). |
+
+`order()` accepts any integer, including negatives, because negative `order` is valid CSS.
+
+### Track and placement calls
+
+- `columns(...)` / `rows(...)` accumulate their tracks across calls; a call without arguments adds nothing.
+- Area placement and individual line properties are mutually exclusive on a `GridItem` (see [Line-based placement](#line-based-placement)).
+- A named `GridArea` cannot also carry line-based coordinates.
+
+### `GridTemplate` constraints
+
+`grid-template-areas` must be rectangular, so `GridTemplate::row()` (and the `areaRows()` shortcut) enforce:
+
+- rows must not be empty;
+- every cell must be a non-empty token without whitespace or quotes (use `.` for an empty cell);
+- every row must have the same number of columns as the first row.
+
+CSS value strings themselves (selectors, track sizes, gaps, media queries) are **not** sanitised — passing valid CSS is the caller's responsibility.
+
+---
+
 ## References
 
 - [Flexbox (MDN)](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Flexbox)

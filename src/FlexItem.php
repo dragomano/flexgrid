@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlexGrid;
 
 use FlexGrid\Enums\ItemAlignment;
+use InvalidArgumentException;
 
 /**
  * Represents a single flex item (child element) with sizing and self-alignment.
@@ -33,6 +34,8 @@ final class FlexItem extends AbstractItem
      */
     public function grow(int|float $value): self
     {
+        $this->assertNotNegative($value, 'flex-grow');
+
         $this->flex = null;
         $this->grow = $value;
 
@@ -44,6 +47,8 @@ final class FlexItem extends AbstractItem
      */
     public function shrink(int|float $value): self
     {
+        $this->assertNotNegative($value, 'flex-shrink');
+
         $this->flex   = null;
         $this->shrink = $value;
 
@@ -66,6 +71,9 @@ final class FlexItem extends AbstractItem
      */
     public function flex(int|float $grow, int|float $shrink, string $basis): self
     {
+        $this->assertNotNegative($grow, 'flex-grow');
+        $this->assertNotNegative($shrink, 'flex-shrink');
+
         $this->flex   = "$grow $shrink $basis";
         $this->grow   = null;
         $this->shrink = null;
@@ -121,5 +129,12 @@ final class FlexItem extends AbstractItem
         $this->appendAlignSelfAndOrder($props, $this->alignSelf, $this->order);
 
         return $props;
+    }
+
+    private function assertNotNegative(int|float $value, string $property): void
+    {
+        if ($value < 0) {
+            throw new InvalidArgumentException("The $property value must not be negative.");
+        }
     }
 }

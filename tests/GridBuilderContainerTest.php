@@ -80,6 +80,26 @@ describe('GridBuilder container', function () {
         expect($props['grid-template-rows'])->toBe('repeat(3, minmax(100px, auto))');
     });
 
+    it('rejects non-positive repeat column count', function () {
+        expect(fn() => GridBuilder::make()->repeatColumns(0))
+            ->toThrow(InvalidArgumentException::class, 'Repeat count must be a positive integer.');
+    });
+
+    it('rejects non-positive repeat row count', function () {
+        expect(fn() => GridBuilder::make()->repeatRows(-1))
+            ->toThrow(InvalidArgumentException::class, 'Repeat count must be a positive integer.');
+    });
+
+    it('accumulates rows across multiple calls', function () {
+        $props = GridBuilder::make()->rows('auto')->rows('1fr')->buildProperties();
+        expect($props['grid-template-rows'])->toBe('auto 1fr');
+    });
+
+    it('ignores column calls without tracks', function () {
+        $props = GridBuilder::make()->columns()->buildProperties();
+        expect($props)->not->toHaveKey('grid-template-columns');
+    });
+
     it('sets grid-auto-rows', function () {
         $props = GridBuilder::make()->autoRows('minmax(100px, auto)')->buildProperties();
         expect($props['grid-auto-rows'])->toBe('minmax(100px, auto)');

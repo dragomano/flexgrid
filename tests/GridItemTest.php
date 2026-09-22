@@ -86,6 +86,15 @@ describe('GridItem', function () {
         expect(GridItem::select('.a')->order(3)->buildProperties()['order'])->toBe('3');
     });
 
+    it('allows negative order', function () {
+        expect(GridItem::select('.a')->order(-1)->buildProperties()['order'])->toBe('-1');
+    });
+
+    it('rejects a non-positive span', function () {
+        expect(fn() => GridItem::select('.tile')->span(0, 2))
+            ->toThrow(InvalidArgumentException::class, 'Span must be a positive integer.');
+    });
+
     it('sets individual row and column lines', function () {
         $props = GridItem::select('.box')
             ->rowStart(2)

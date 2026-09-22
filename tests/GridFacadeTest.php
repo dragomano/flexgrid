@@ -43,6 +43,11 @@ describe('Grid presets', function () {
         expect($props['gap'])->toBe('2rem');
     });
 
+    it('columns() rejects a non-positive column count', function () {
+        expect(fn() => Grid::columns(0))
+            ->toThrow(InvalidArgumentException::class, 'Repeat count must be a positive integer.');
+    });
+
     it('fluid() creates auto-fill layout', function () {
         $props = Grid::fluid('', '300px')->buildProperties();
         expect($props['grid-template-columns'])

@@ -47,4 +47,40 @@ describe('GridTemplate', function () {
         $t = GridTemplate::create()->row(['a'])->row(['b'])->row(['c']);
         expect($t->rowCount())->toBe(3);
     });
+
+    it('accepts null cells expressed as dots', function () {
+        $value = GridTemplate::create()
+            ->row(['header', 'header'])
+            ->row(['.', 'main'])
+            ->build();
+
+        expect($value)->toContain('". main"');
+    });
+
+    it('rejects an empty row', function () {
+        expect(fn() => GridTemplate::create()->row([]))
+            ->toThrow(InvalidArgumentException::class, 'Grid template row must not be empty.');
+    });
+
+    it('rejects an empty cell', function () {
+        expect(fn() => GridTemplate::create()->row(['header', '']))
+            ->toThrow(InvalidArgumentException::class, 'Grid area cell must be a non-empty string.');
+    });
+
+    it('rejects a cell containing whitespace', function () {
+        expect(fn() => GridTemplate::create()->row(['header main']))
+            ->toThrow(InvalidArgumentException::class, 'Invalid grid area name: "header main".');
+    });
+
+    it('rejects a cell containing a quote', function () {
+        expect(fn() => GridTemplate::create()->row(['he"ader']))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('rejects rows with mismatched column counts', function () {
+        expect(fn() => GridTemplate::create()
+            ->row(['header', 'header'])
+            ->row(['nav', 'main', 'aside']))
+            ->toThrow(InvalidArgumentException::class, 'All grid template rows must have the same number of columns.');
+    });
 });
