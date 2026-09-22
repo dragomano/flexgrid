@@ -117,6 +117,33 @@ describe('GridBuilder::build()', function () {
         expect($css)->not->toContain('@media');
     });
 
+    it('merges variants sharing a custom media() query into one block', function () {
+        $css = GridBuilder::make('.layout')
+            ->media('(orientation: landscape)', fn(GridBuilder $g) => $g->columns('1fr', '1fr'))
+            ->media('(orientation: landscape)', fn(GridBuilder $g) => $g->gap('2rem'))
+            ->build();
+
+        expect(substr_count($css, '@media (orientation: landscape)'))->toBe(1)
+            ->and($css)->toContain('grid-template-columns: 1fr 1fr;')
+            ->and($css)->toContain('gap: 2rem;');
+    });
+
+    it('emits item rules, gap and alignment together inside a media block', function () {
+        $css = GridBuilder::make('.layout')
+            ->responsive(900, fn(GridBuilder $g) => $g
+                ->gap('2rem')
+                ->justifyItems(FlexGrid\Enums\ItemAlignment::Center)
+                ->item(GridItem::select('.layout__cell')->namedArea('cell')))
+            ->build();
+
+        $mediaBlock = substr($css, strpos($css, '@media'));
+
+        expect($mediaBlock)->toContain('gap: 2rem;')
+            ->and($mediaBlock)->toContain('justify-items: center;')
+            ->and($mediaBlock)->toContain('.layout__cell {')
+            ->and($mediaBlock)->toContain('grid-area: cell;');
+    });
+
     it('includes responsive item rules inside media blocks', function () {
         $css = GridBuilder::make('.layout')
             ->responsive(1024, fn(GridBuilder $g) => $g->item(GridItem::select('.layout__side')->namedArea('side')))

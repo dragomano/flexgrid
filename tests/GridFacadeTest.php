@@ -109,4 +109,33 @@ describe('Grid presets', function () {
         expect($props['grid-auto-flow'])->toBe('row dense')
             ->and($props['grid-auto-rows'])->toBe('10px');
     });
+
+    it('masonry() honours custom min width and gap', function () {
+        $props = Grid::masonry('', '320px', '2rem')->buildProperties();
+        expect($props['grid-template-columns'])->toBe('repeat(auto-fill, minmax(320px, 1fr))')
+            ->and($props['gap'])->toBe('2rem');
+    });
+
+    it('holyGrail() honours custom side and aside widths', function () {
+        $props = Grid::holyGrail('', '280px', '200px', '1rem')->buildProperties();
+        expect($props['grid-template-columns'])->toBe('280px 1fr 200px')
+            ->and($props['gap'])->toBe('1rem');
+    });
+
+    it('dashboard() honours custom sidebar and header sizes', function () {
+        $props = Grid::dashboard('', '300px', '72px')->buildProperties();
+        expect($props['grid-template-columns'])->toBe('300px 1fr')
+            ->and($props['grid-template-rows'])->toBe('72px 1fr auto');
+    });
+
+    it('presets remain chainable into inline-grid', function () {
+        $props = Grid::columns(3)->inline()->buildProperties();
+        expect($props['display'])->toBe('inline-grid')
+            ->and($props['grid-template-columns'])->toBe('repeat(3, 1fr)');
+    });
+
+    it('presets omit the selector block when created without a selector', function () {
+        $css = Grid::columns(2)->build();
+        expect($css)->not->toContain('{');
+    });
 });

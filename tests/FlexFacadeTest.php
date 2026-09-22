@@ -58,4 +58,24 @@ describe('Flex facade', function () {
             ->and($css)->not->toContain(' > :first-child {')
             ->and($css)->not->toContain(' > :last-child {');
     });
+
+    it('cards preset honours custom min width and gap', function () {
+        $css = Flex::cards('.grid', '320px', '2rem')->build();
+        expect($css)->toContain('gap: 2rem;')
+            ->and($css)->toContain('.grid > * {')
+            ->and($css)->toContain('flex: 1 1 320px;');
+    });
+
+    it('sidebar preset honours custom side width and gap', function () {
+        $css = Flex::sidebar('.layout', '300px', '2rem')->build();
+        expect($css)->toContain('gap: 2rem;')
+            ->and($css)->toContain('flex: 0 0 300px;')
+            ->and($css)->toContain('flex: 1 1 0;');
+    });
+
+    it('presets remain chainable into inline-flex', function () {
+        $props = Flex::row('.menu')->inline()->buildProperties();
+        expect($props['display'])->toBe('inline-flex')
+            ->and($props['flex-direction'])->toBe('row');
+    });
 });
