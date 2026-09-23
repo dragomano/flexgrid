@@ -31,6 +31,7 @@
     "pestphp/pest": "^3.8|^4.4",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3",
+    "roave/backward-compatibility-check": "^8.20",
     "vimeo/psalm": "^6.15"
   },
   "scripts": {
@@ -40,6 +41,7 @@
     "check": "vendor/bin/rector process --dry-run --clear-cache",
     "phpstan": "vendor/bin/phpstan analyse -l 10 src --memory-limit=512M --debug --no-progress",
     "psalm": "vendor/bin/psalm --stats --no-cache",
+    "bc": "roave-backward-compatibility-check --from=origin/main",
     "test": "vendor/bin/pest --colors=always --display-warnings",
     "test-coverage": "vendor/bin/pest --colors=always --coverage --min=100",
     "test-coverage-clover": "vendor/bin/pest --colors=always --min=100 --coverage-clover coverage.xml",
