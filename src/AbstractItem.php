@@ -14,7 +14,10 @@ abstract class AbstractItem implements CssItem
 {
     use RendersCssRule;
 
-    public function __construct(private readonly string $selector = '') {}
+    public function __construct(private readonly string $selector = '')
+    {
+        CssGuard::assertSelector($selector);
+    }
 
     public static function select(string $selector): static
     {

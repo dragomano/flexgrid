@@ -100,6 +100,7 @@ final class GridItem extends AbstractItem
     public function rowStart(int|string $line): self
     {
         $this->assertNoArea();
+        $this->assertSafeLine($line);
 
         $this->rowStart = $line;
 
@@ -109,6 +110,7 @@ final class GridItem extends AbstractItem
     public function rowEnd(int|string $line): self
     {
         $this->assertNoArea();
+        $this->assertSafeLine($line);
 
         $this->rowEnd = $line;
 
@@ -118,6 +120,7 @@ final class GridItem extends AbstractItem
     public function columnStart(int|string $line): self
     {
         $this->assertNoArea();
+        $this->assertSafeLine($line);
 
         $this->columnStart = $line;
 
@@ -127,6 +130,7 @@ final class GridItem extends AbstractItem
     public function columnEnd(int|string $line): self
     {
         $this->assertNoArea();
+        $this->assertSafeLine($line);
 
         $this->columnEnd = $line;
 
@@ -190,6 +194,13 @@ final class GridItem extends AbstractItem
             throw new InvalidArgumentException(
                 'Cannot combine individual line properties with area placement.'
             );
+        }
+    }
+
+    private function assertSafeLine(int|string $line): void
+    {
+        if (is_string($line)) {
+            CssGuard::assertValue($line);
         }
     }
 }

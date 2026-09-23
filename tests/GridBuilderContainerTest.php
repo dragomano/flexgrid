@@ -203,4 +203,59 @@ describe('GridBuilder container', function () {
             ->and($props)->not->toHaveKey('align-content')
             ->and($props)->not->toHaveKey('place-content');
     });
+
+    it('rejects a selector with forbidden characters', function () {
+        expect(fn() => GridBuilder::make('.grid</style>'))
+            ->toThrow(InvalidArgumentException::class, 'The selector contains forbidden characters.');
+    });
+
+    it('rejects a column track with forbidden characters', function () {
+        expect(fn() => GridBuilder::make('.grid')->columns('1fr; }'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a gap with forbidden characters', function () {
+        expect(fn() => GridBuilder::make('.grid')->gap('1rem', '2rem}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a media query with forbidden characters', function () {
+        expect(fn() => GridBuilder::make('.grid')->media('screen {}', fn(GridBuilder $g) => $g))
+            ->toThrow(InvalidArgumentException::class, 'The media query contains forbidden characters.');
+    });
+
+    it('rejects forbidden characters in repeat tracks', function () {
+        expect(fn() => GridBuilder::make('.grid')->repeatColumns(2, '1fr}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.')
+            ->and(fn() => GridBuilder::make('.grid')->repeatRows(2, '1fr}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a forbidden row track', function () {
+        expect(fn() => GridBuilder::make('.grid')->rows('1fr}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects forbidden min/max in autoFillColumns', function () {
+        expect(fn() => GridBuilder::make('.grid')->autoFillColumns('200px}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.')
+            ->and(fn() => GridBuilder::make('.grid')->autoFillColumns('200px', '1fr}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects forbidden min/max in autoFitColumns', function () {
+        expect(fn() => GridBuilder::make('.grid')->autoFitColumns('200px}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.')
+            ->and(fn() => GridBuilder::make('.grid')->autoFitColumns('200px', '1fr}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects forbidden characters in implicit tracks and flow', function () {
+        expect(fn() => GridBuilder::make('.grid')->autoRows('10px}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.')
+            ->and(fn() => GridBuilder::make('.grid')->autoColumns('10px}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.')
+            ->and(fn() => GridBuilder::make('.grid')->autoFlow('row}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
 });

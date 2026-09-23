@@ -60,6 +60,8 @@ final class FlexItem extends AbstractItem
      */
     public function basis(string $value): self
     {
+        CssGuard::assertValue($value);
+
         $this->flex  = null;
         $this->basis = $value;
 
@@ -73,6 +75,8 @@ final class FlexItem extends AbstractItem
     {
         $this->assertNotNegative($grow, 'flex-grow');
         $this->assertNotNegative($shrink, 'flex-shrink');
+
+        CssGuard::assertValue($basis);
 
         $this->flex   = "$grow $shrink $basis";
         $this->grow   = null;

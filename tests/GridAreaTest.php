@@ -124,4 +124,24 @@ describe('GridArea', function () {
         expect(fn() => (new GridArea())->spanColumns(-2))
             ->toThrow(InvalidArgumentException::class, 'Span must be a positive integer.');
     });
+
+    it('rejects a named area with forbidden characters', function () {
+        expect(fn() => GridArea::named('main; }'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a forbidden string line', function () {
+        expect(fn() => (new GridArea())->rowStart('span 2}'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a forbidden atRow line', function () {
+        expect(fn() => GridArea::atRow('main<'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a forbidden atColumn line', function () {
+        expect(fn() => GridArea::atColumn('main<'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
 });

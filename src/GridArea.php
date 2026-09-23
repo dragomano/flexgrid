@@ -28,6 +28,8 @@ final class GridArea
 
     public static function named(string $name): self
     {
+        CssGuard::assertValue($name);
+
         $area = new self();
         $area->name = $name;
 
@@ -45,6 +47,8 @@ final class GridArea
 
     public static function atRow(string $rowLine): self
     {
+        CssGuard::assertValue($rowLine);
+
         $area = new self();
         $area->rowStart = $rowLine;
 
@@ -53,6 +57,8 @@ final class GridArea
 
     public static function atColumn(string $columnLine): self
     {
+        CssGuard::assertValue($columnLine);
+
         $area = new self();
         $area->columnStart = $columnLine;
 
@@ -62,6 +68,7 @@ final class GridArea
     public function rowStart(int|string $line): self
     {
         $this->assertLineAllowed();
+        $this->assertSafeLine($line);
 
         $this->rowStart = $line;
 
@@ -71,6 +78,7 @@ final class GridArea
     public function rowEnd(int|string $line): self
     {
         $this->assertLineAllowed();
+        $this->assertSafeLine($line);
 
         $this->rowEnd = $line;
         $this->rowSpan = null;
@@ -81,6 +89,7 @@ final class GridArea
     public function columnStart(int|string $line): self
     {
         $this->assertLineAllowed();
+        $this->assertSafeLine($line);
 
         $this->columnStart = $line;
 
@@ -90,6 +99,7 @@ final class GridArea
     public function columnEnd(int|string $line): self
     {
         $this->assertLineAllowed();
+        $this->assertSafeLine($line);
 
         $this->columnEnd = $line;
         $this->columnSpan = null;
@@ -185,6 +195,13 @@ final class GridArea
             throw new InvalidArgumentException(
                 'Cannot combine a named grid area with line-based placement.'
             );
+        }
+    }
+
+    private function assertSafeLine(int|string $line): void
+    {
+        if (is_string($line)) {
+            CssGuard::assertValue($line);
         }
     }
 

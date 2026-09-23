@@ -28,6 +28,8 @@ abstract class AbstractBuilder
 
     public function __construct(protected readonly string $selector = '')
     {
+        CssGuard::assertSelector($selector);
+
         $this->items    = new CssItemList();
         $this->variants = new BreakpointVariantList();
     }
@@ -47,6 +49,8 @@ abstract class AbstractBuilder
 
     public function media(string $query, callable $configure): self
     {
+        CssGuard::assertQuery($query);
+
         $variant = static::make($this->selector);
 
         $configure($variant);
@@ -83,6 +87,12 @@ abstract class AbstractBuilder
      */
     public function gap(string $rowGap, ?string $columnGap = null): self
     {
+        CssGuard::assertValue($rowGap);
+
+        if ($columnGap !== null) {
+            CssGuard::assertValue($columnGap);
+        }
+
         $this->rowGap    = $rowGap;
         $this->columnGap = $columnGap ?? $rowGap;
 
@@ -91,6 +101,8 @@ abstract class AbstractBuilder
 
     public function rowGap(string $gap): self
     {
+        CssGuard::assertValue($gap);
+
         $this->rowGap = $gap;
 
         return $this;
@@ -98,6 +110,8 @@ abstract class AbstractBuilder
 
     public function columnGap(string $gap): self
     {
+        CssGuard::assertValue($gap);
+
         $this->columnGap = $gap;
 
         return $this;

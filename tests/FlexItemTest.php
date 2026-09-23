@@ -72,4 +72,19 @@ describe('FlexItem', function () {
         expect(fn() => FlexItem::select('.card')->flex(1, -1, '240px'))
             ->toThrow(InvalidArgumentException::class, 'The flex-shrink value must not be negative.');
     });
+
+    it('rejects a selector with forbidden characters', function () {
+        expect(fn() => FlexItem::select('.card<script>'))
+            ->toThrow(InvalidArgumentException::class, 'The selector contains forbidden characters.');
+    });
+
+    it('rejects a basis with forbidden characters', function () {
+        expect(fn() => FlexItem::select('.card')->basis('240px"'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('rejects a forbidden basis in the flex shorthand', function () {
+        expect(fn() => FlexItem::select('.card')->flex(1, 1, '240px; }'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
 });

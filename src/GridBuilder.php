@@ -40,6 +40,8 @@ final class GridBuilder extends AbstractBuilder
     public function columns(string ...$tracks): self
     {
         foreach ($tracks as $track) {
+            CssGuard::assertValue($track);
+
             $this->templateColumns[] = $track;
         }
 
@@ -48,6 +50,8 @@ final class GridBuilder extends AbstractBuilder
 
     public function repeatColumns(int $count, string $track = '1fr'): self
     {
+        CssGuard::assertValue($track);
+
         $this->templateColumns[] = GridValue::repeat($count, $track);
 
         return $this;
@@ -55,6 +59,9 @@ final class GridBuilder extends AbstractBuilder
 
     public function autoFillColumns(string $min, string $max = '1fr'): self
     {
+        CssGuard::assertValue($min);
+        CssGuard::assertValue($max);
+
         $this->templateColumns[] = GridValue::repeat('auto-fill', GridValue::minmax($min, $max));
 
         return $this;
@@ -62,6 +69,9 @@ final class GridBuilder extends AbstractBuilder
 
     public function autoFitColumns(string $min, string $max = '1fr'): self
     {
+        CssGuard::assertValue($min);
+        CssGuard::assertValue($max);
+
         $this->templateColumns[] = GridValue::repeat('auto-fit', GridValue::minmax($min, $max));
 
         return $this;
@@ -70,6 +80,8 @@ final class GridBuilder extends AbstractBuilder
     public function rows(string ...$tracks): self
     {
         foreach ($tracks as $track) {
+            CssGuard::assertValue($track);
+
             $this->templateRows[] = $track;
         }
 
@@ -78,6 +90,8 @@ final class GridBuilder extends AbstractBuilder
 
     public function repeatRows(int $count, string $track = '1fr'): self
     {
+        CssGuard::assertValue($track);
+
         $this->templateRows[] = GridValue::repeat($count, $track);
 
         return $this;
@@ -134,6 +148,8 @@ final class GridBuilder extends AbstractBuilder
 
     public function autoRows(string $size): self
     {
+        CssGuard::assertValue($size);
+
         $this->autoRows = $size;
 
         return $this;
@@ -141,6 +157,8 @@ final class GridBuilder extends AbstractBuilder
 
     public function autoColumns(string $size): self
     {
+        CssGuard::assertValue($size);
+
         $this->autoColumns = $size;
 
         return $this;
@@ -148,6 +166,8 @@ final class GridBuilder extends AbstractBuilder
 
     public function autoFlow(string $flow): self
     {
+        CssGuard::assertValue($flow);
+
         $this->autoFlow = $flow;
 
         return $this;

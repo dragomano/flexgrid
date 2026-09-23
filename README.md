@@ -756,13 +756,25 @@ Configuration is validated eagerly: invalid input throws an `InvalidArgumentExce
 - every cell must be a non-empty token without whitespace or quotes (use `.` for an empty cell);
 - every row must have the same number of columns as the first row.
 
-CSS value strings themselves (selectors, track sizes, gaps, media queries) are **not** sanitised — passing valid CSS is the caller's responsibility.
+### CSS string safety
+
+User-supplied strings (selectors, track sizes, gaps, media queries, item values) are **not** validated as CSS — passing otherwise valid CSS is the caller's responsibility. The library does apply a minimal deny-list that rejects, at configuration time, only the characters that could break out of the surrounding CSS/HTML context:
+
+| Position | Rejected characters |
+|---|---|
+| Selectors, media queries | `{` `}` `<` `;` and control characters (tab, newline, `\0`, …) |
+| Property values (tracks, gaps, sizes, `flex-basis`, named lines, …) | `{` `}` `<` `>` `;` `"` `'` and control characters |
+
+This is a breakout guard, not a CSS validator: legitimate CSS such as `minmax(0, 1fr)`, `calc(100% - 20px)`, `var(--x)`, the child combinator `.a > .b`, and quoted attribute selectors `[type="text"]` all pass. Two consequences worth noting:
+
+- Values are also meant to be safe inside an HTML `style="…"` attribute, so `"` and `'` are rejected in values.
+- Media Queries Level 4 range syntax that relies on `<` (e.g. `(width < 640px)`) is rejected; use `(min-width: …)` / `(max-width: …)` instead.
 
 ### Limitations
 
 - `FlexItem` has no `justifySelf()`: `justify-self` has no effect in Flexbox. Use `margin: auto` on the item or `justifyContent()` on the container instead.
 - Only the delta relative to the base container is emitted inside a `@media` block; a responsive variant that changes nothing produces no block (see [Responsive breakpoints](#responsive-breakpoints)).
-- The library generates CSS text only — it does not parse, validate or escape arbitrary CSS values.
+- The library generates CSS text only. Beyond the breakout deny-list above, it does not parse or validate arbitrary CSS values.
 
 ---
 

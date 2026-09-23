@@ -201,4 +201,19 @@ describe('GridItem', function () {
         $css = GridItem::select('.empty')->toCss();
         expect($css)->toBe('');
     });
+
+    it('rejects a selector with forbidden characters', function () {
+        expect(fn() => GridItem::select('.item"><b>'))
+            ->toThrow(InvalidArgumentException::class, 'The selector contains forbidden characters.');
+    });
+
+    it('rejects a string line with forbidden characters', function () {
+        expect(fn() => GridItem::select('.item')->rowStart('main; }'))
+            ->toThrow(InvalidArgumentException::class, 'The value contains forbidden characters.');
+    });
+
+    it('allows a named string line', function () {
+        $props = GridItem::select('.item')->rowStart('main-start')->buildProperties();
+        expect($props['grid-row-start'])->toBe('main-start');
+    });
 });
