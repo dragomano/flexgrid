@@ -701,11 +701,13 @@
   <span class="kw">grid-template-columns</span>: 1fr;
   <span class="kw">gap</span>: 1rem;
 }
+
 <span class="cm">@media (min-width: 640px) {</span>
   <span class="prop">.layout</span> {
     <span class="kw">grid-template-columns</span>: repeat(2, 1fr);
   }
 <span class="cm">}</span>
+
 <span class="cm">@media (min-width: 1024px) {</span>
   <span class="prop">.layout</span> {
     <span class="kw">grid-template-columns</span>: repeat(3, 1fr);
@@ -1111,8 +1113,11 @@
   <span class="kw">flex-direction</span>: column;
   <span class="kw">gap</span>: 1rem;
 }
+
 <span class="cm">@media (min-width: 768px) {</span>
-  <span class="prop">.layout</span> { <span class="kw">flex-direction</span>: row; }
+  <span class="prop">.layout</span> {
+    <span class="kw">flex-direction</span>: row;
+  }
 <span class="cm">}</span></pre>
           </div>
         </div>

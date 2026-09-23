@@ -157,11 +157,24 @@ GridBuilder::make('.page')
     "nav footer";
 }
 
-.page__header { grid-area: header; }
-.page__nav    { grid-area: nav; }
-.page__main   { grid-area: main; }
-.page__aside  { justify-self: end; align-self: start; }
+.page__header {
+  grid-area: header;
+}
+
+.page__nav {
+  grid-area: nav;
+}
+
+.page__main {
+  grid-area: main;
+}
+
+.page__aside {
+  place-self: start end;
+}
 ```
+
+Each item is emitted as its own multi-line rule. Note that setting both `alignSelf()` and `justifySelf()` collapses into the `place-self` shorthand (`align justify` order).
 
 ### Line-based placement
 
@@ -189,10 +202,26 @@ GridBuilder::make('.gallery')
 ```
 
 ```css
-.gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-.gallery__hero  { grid-row: 1 / span 2; grid-column: 1 / span 2; }
-.gallery__wide  { grid-row: 3 / auto;   grid-column: 1 / span 3; }
-.gallery__tall  { grid-row: 1 / 4;      grid-column: 4 / auto;   }
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.gallery__hero {
+  grid-row: 1 / span 2;
+  grid-column: 1 / span 2;
+}
+
+.gallery__wide {
+  grid-row: 3 / auto;
+  grid-column: 1 / span 3;
+}
+
+.gallery__tall {
+  grid-row: 1 / 4;
+  grid-column: 4 / auto;
+}
 ```
 
 Line-based placement comes in two forms that must not be mixed on the same item:
@@ -256,7 +285,7 @@ GridBuilder::make('.masonry')
 
 ### Responsive breakpoints
 
-`responsive(int $minWidth, callable)` wraps a variant in `@media (min-width: вЂ¦)`. `media(string $query, callable)` accepts any media query string.
+`responsive(int $minWidth, callable)` wraps a variant in `@media (min-width: …)`. `media(string $query, callable)` accepts any media query string.
 
 ```php
 GridBuilder::make('.layout')
@@ -283,15 +312,22 @@ GridBuilder::make('.layout')
 }
 
 @media (min-width: 640px) {
-  .layout { grid-template-columns: 1fr 1fr; }
+  .layout {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (min-width: 1024px) {
-  .layout { grid-template-columns: 1fr 1fr 1fr; gap: 2rem; }
+  .layout {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .layout { grid-auto-flow: row; }
+  .layout {
+    grid-auto-flow: row;
+  }
 }
 ```
 
@@ -299,7 +335,7 @@ Each variant is configured from scratch, but only the properties that actually d
 
 ### Inline styles
 
-`toInlineStyle()` returns a string suitable for the HTML `style` attribute вЂ” no selector, no braces:
+`toInlineStyle()` returns a string suitable for the HTML `style` attribute — no selector, no braces:
 
 ```php
 $style = GridBuilder::make()
@@ -311,7 +347,7 @@ $style = GridBuilder::make()
 ```
 
 ```html
-<div style="<?= $style ?>">вЂ¦</div>
+<div style="<?= $style ?>">…</div>
 ```
 
 ### Inline grid
@@ -470,18 +506,34 @@ GridArea::at(2, 1)
 
 ## GridItem reference
 
+Placement is chosen with **one** of the following (they are mutually exclusive — see [Line-based placement](#line-based-placement)):
+
+```php
+// Named area
+GridItem::select('.selector')->namedArea('main');       // grid-area: main
+
+// Line placement by coordinates
+GridItem::select('.selector')->place(2, 1);              // grid-row: 2 / auto; grid-column: 1 / auto
+
+// Auto-placement by span only
+GridItem::select('.selector')->span(rowSpan: 2, colSpan: 3);  // grid-row: span 2; grid-column: span 3
+
+// Full GridArea object
+GridItem::select('.selector')->area(GridArea::at(1, 2)->spanRows(2));
+```
+
+Self-alignment and `order` are independent of placement and can be added to any of the above:
+
 ```php
 GridItem::select('.selector')
-    ->namedArea('main')                      // grid-area: main
-    ->place(2, 1)                            // grid-row: 2; grid-column: 1
-    ->span(rowSpan: 2, colSpan: 3)           // span 2 rows, 3 columns
-    ->area(GridArea::at(1, 2)->spanRows(2))  // full GridArea object
-    ->alignSelf(ItemAlignment::Start)
-    ->justifySelf(ItemAlignment::End)
-    ->placeSelf(ItemAlignment::Center)       // both axes
-    ->order(2)
-    ->toCss();                               // returns CSS string
+    ->place(2, 1)
+    ->alignSelf(ItemAlignment::Start)        // align-self: start
+    ->justifySelf(ItemAlignment::End)        // justify-self: end
+    ->order(2)                               // order: 2
+    ->toCss();                               // returns the CSS string
 ```
+
+Setting both `alignSelf()` and `justifySelf()` collapses into the `place-self` shorthand. `placeSelf(ItemAlignment $align, ?ItemAlignment $justify = null)` sets both axes at once.
 
 ---
 
@@ -541,7 +593,9 @@ FlexBuilder::make('.cards')
   gap: 1rem;
 }
 
-.cards > .card { flex: 1 1 240px; }
+.cards > .card {
+  flex: 1 1 240px;
+}
 ```
 
 ### Toolbar alignment
@@ -589,7 +643,9 @@ FlexBuilder::make('.layout')
 }
 
 @media (min-width: 768px) {
-  .layout { flex-direction: row; }
+  .layout {
+    flex-direction: row;
+  }
 }
 ```
 
@@ -699,6 +755,12 @@ Configuration is validated eagerly: invalid input throws an `InvalidArgumentExce
 - every row must have the same number of columns as the first row.
 
 CSS value strings themselves (selectors, track sizes, gaps, media queries) are **not** sanitised — passing valid CSS is the caller's responsibility.
+
+### Limitations
+
+- `FlexItem` has no `justifySelf()`: `justify-self` has no effect in Flexbox. Use `margin: auto` on the item or `justifyContent()` on the container instead.
+- Only the delta relative to the base container is emitted inside a `@media` block; a responsive variant that changes nothing produces no block (see [Responsive breakpoints](#responsive-breakpoints)).
+- The library generates CSS text only — it does not parse, validate or escape arbitrary CSS values.
 
 ---
 
