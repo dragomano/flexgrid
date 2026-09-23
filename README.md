@@ -3,6 +3,8 @@
 ![PHP](https://img.shields.io/badge/PHP-^8.2-blue.svg?style=flat)
 [![Coverage Status](https://coveralls.io/repos/github/dragomano/flexgrid/badge.svg?branch=main)](https://coveralls.io/github/dragomano/flexgrid?branch=main)
 
+**English** | [Русский](README.ru.md)
+
 Fluent PHP library for generating CSS Grid and Flexbox layouts. Supports named areas, line-based placement, responsive breakpoints, and ready-made presets for common patterns.
 
 ---
@@ -761,6 +763,134 @@ CSS value strings themselves (selectors, track sizes, gaps, media queries) are *
 - `FlexItem` has no `justifySelf()`: `justify-self` has no effect in Flexbox. Use `margin: auto` on the item or `justifyContent()` on the container instead.
 - Only the delta relative to the base container is emitted inside a `@media` block; a responsive variant that changes nothing produces no block (see [Responsive breakpoints](#responsive-breakpoints)).
 - The library generates CSS text only — it does not parse, validate or escape arbitrary CSS values.
+
+---
+
+## API reference
+
+Compact signatures for every public builder and facade method, with the CSS each one produces. `GridValue`, `GridArea`, `GridItem`, `FlexItem` and `GridTemplate` also have dedicated example sections above.
+
+### Container methods (shared by `GridBuilder` and `FlexBuilder`)
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `make(string $selector = '')` | `static` | Factory; the argument becomes the rule selector (empty = no selector). |
+| `gap(string $rowGap, ?string $columnGap = null)` | `$this` | `gap: <row>`, or `gap: <row> <column>` when they differ. |
+| `rowGap(string $gap)` | `self` | `row-gap: <gap>` |
+| `columnGap(string $gap)` | `self` | `column-gap: <gap>` |
+| `alignContent(ContentAlignment $a)` | `self` | `align-content: <a>` |
+| `justifyContent(ContentAlignment $a)` | `self` | `justify-content: <a>` |
+| `placeContent(ContentAlignment $align, ?ContentAlignment $justify = null)` | `self` | `place-content: <align> [<justify>]`; collapses to one value when equal. |
+| `responsive(int $minWidth, callable $configure)` | `self` | Wraps the variant delta in `@media (min-width: <minWidth>px)`. |
+| `media(string $query, callable $configure)` | `self` | Wraps the variant delta in `@media <query>`. |
+| `build(string $indent = '')` | `string` | Full CSS: container rule, child rules and `@media` blocks. |
+| `toInlineStyle()` | `string` | `prop: val; …` for the container only — no selector, no braces. |
+
+### `GridBuilder`
+
+Adds grid-specific methods on top of the shared container methods.
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `inline()` | `self` | `display: inline-grid` |
+| `columns(string ...$tracks)` | `self` | Appends tracks to `grid-template-columns` (accumulates across calls). |
+| `rows(string ...$tracks)` | `self` | Appends tracks to `grid-template-rows` (accumulates across calls). |
+| `repeatColumns(int $count, string $track = '1fr')` | `self` | Appends `repeat(<count>, <track>)` to the columns. |
+| `repeatRows(int $count, string $track = '1fr')` | `self` | Appends `repeat(<count>, <track>)` to the rows. |
+| `autoFillColumns(string $min, string $max = '1fr')` | `self` | Appends `repeat(auto-fill, minmax(<min>, <max>))`. |
+| `autoFitColumns(string $min, string $max = '1fr')` | `self` | Appends `repeat(auto-fit, minmax(<min>, <max>))`. |
+| `areas(GridTemplate $template)` | `self` | `grid-template-areas: <template>` |
+| `areaRows(mixed ...$rows)` | `self` | Builds `grid-template-areas` from strings or arrays of names. |
+| `autoRows(string $size)` | `self` | `grid-auto-rows: <size>` |
+| `autoColumns(string $size)` | `self` | `grid-auto-columns: <size>` |
+| `autoFlow(string $flow)` | `self` | `grid-auto-flow: <flow>` |
+| `alignItems(ItemAlignment $a)` | `self` | `align-items: <a>` |
+| `justifyItems(ItemAlignment $a)` | `self` | `justify-items: <a>` |
+| `placeItems(ItemAlignment $align, ?ItemAlignment $justify = null)` | `self` | `place-items: <align> [<justify>]`; collapses to one value when equal. |
+| `item(GridItem $item)` | `self` | Appends one child rule. |
+| `items(list<GridItem> $items)` | `self` | Appends several child rules. |
+
+### `FlexBuilder`
+
+Adds flex-specific methods on top of the shared container methods.
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `inline()` | `self` | `display: inline-flex` |
+| `direction(FlexDirection $value)` | `self` | `flex-direction: <value>` (merges into `flex-flow` when `wrap` is also set). |
+| `wrap(FlexWrap $value)` | `self` | `flex-wrap: <value>` (merges into `flex-flow` when `direction` is also set). |
+| `noWrap()` | `self` | `flex-wrap: nowrap` |
+| `wrapReverse()` | `self` | `flex-wrap: wrap-reverse` |
+| `flow(FlexDirection $direction, FlexWrap $wrap)` | `self` | `flex-flow: <direction> <wrap>` |
+| `alignItems(ItemAlignment $a)` | `self` | `align-items: <a>` |
+| `item(FlexItem $item)` | `self` | Appends one child rule. |
+| `items(list<FlexItem> $items)` | `self` | Appends several child rules. |
+
+When both `direction()` and `wrap()` are set (directly or via `flow()`), the two collapse into a single `flex-flow` declaration.
+
+### `Grid` facade
+
+Every preset returns a ready-to-chain `GridBuilder`.
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `Grid::container(string $selector = '')` | `GridBuilder` | Empty grid container. |
+| `Grid::item(string $selector = '')` | `GridItem` | New grid item. |
+| `Grid::template()` | `GridTemplate` | New area template. |
+| `Grid::area()` | `GridArea` | New placement area. |
+| `Grid::columns(int $n, string $selector = '', string $gap = '1rem')` | `GridBuilder` | `grid-template-columns: repeat(<n>, 1fr)` + `gap`. |
+| `Grid::fluid(string $selector = '', string $minWidth = '250px', string $gap = '1rem')` | `GridBuilder` | `repeat(auto-fill, minmax(<minWidth>, 1fr))` + `gap`. |
+| `Grid::sidebar(string $selector = '', string $sideWidth = '260px', string $gap = '1.5rem')` | `GridBuilder` | `grid-template-columns: <sideWidth> 1fr` + `gap`. |
+| `Grid::centered(string $selector = '', string $maxWidth = '720px', string $gap = '1rem')` | `GridBuilder` | `grid-template-columns: 1fr minmax(0, <maxWidth>) 1fr` + `gap`. |
+| `Grid::holyGrail(string $selector = '', string $sideWidth = '200px', string $asideWidth = '160px', string $gap = '0')` | `GridBuilder` | header / (sidebar + main + aside) / footer areas + `gap`. |
+| `Grid::dashboard(string $selector = '', string $sidebarWidth = '240px', string $headerHeight = '60px')` | `GridBuilder` | header / (nav + main) / (nav + footer) areas. |
+| `Grid::masonry(string $selector = '', string $minWidth = '220px', string $gap = '1rem')` | `GridBuilder` | auto-fill columns + `grid-auto-rows: 10px` + `grid-auto-flow: row dense`. |### `Flex` facade
+
+Every preset returns a ready-to-chain `FlexBuilder`.
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `Flex::container(string $selector = '')` | `FlexBuilder` | Empty flex container. |
+| `Flex::item(string $selector = '')` | `FlexItem` | New flex item. |
+| `Flex::row(string $selector = '', string $gap = '1rem')` | `FlexBuilder` | `flex-direction: row` + `gap`. |
+| `Flex::column(string $selector = '', string $gap = '1rem')` | `FlexBuilder` | `flex-direction: column` + `gap`. |
+| `Flex::cards(string $selector = '', string $minWidth = '250px', string $gap = '1rem')` | `FlexBuilder` | row + wrap + `gap`; child `<selector> > *`: `flex: 1 1 <minWidth>`. |
+| `Flex::sidebar(string $selector = '', string $sideWidth = '260px', string $gap = '1.5rem')` | `FlexBuilder` | row + `gap`; first child `flex: 0 0 <sideWidth>`, last child `flex: 1 1 0`. |
+
+`Flex::cards()` and `Flex::sidebar()` only emit child rules when `$selector` is non-empty.
+
+### `GridItem`
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `GridItem::select(string $selector)` | `static` | Factory. |
+| `area(GridArea $area)` | `self` | The area's `grid-*` properties. |
+| `place(int $row, int $col)` | `self` | `grid-row: <row> / auto; grid-column: <col> / auto` |
+| `span(int $rowSpan, int $colSpan)` | `self` | `grid-row: span <rowSpan>; grid-column: span <colSpan>` |
+| `namedArea(string $name)` | `self` | `grid-area: <name>` |
+| `rowStart / rowEnd / columnStart / columnEnd (int\|string $line)` | `self` | `grid-<axis>-start` / `grid-<axis>-end` longhands. |
+| `alignSelf(ItemAlignment $a)` | `self` | `align-self: <a>` |
+| `justifySelf(ItemAlignment $a)` | `self` | `justify-self: <a>` |
+| `placeSelf(ItemAlignment $align, ?ItemAlignment $justify = null)` | `self` | `place-self: <align> [<justify>]`; collapses to one value when equal. |
+| `order(int $order)` | `self` | `order: <order>` |
+| `toCss(string $indent = '')` | `string` | The item's CSS rule. |
+
+Area placement (`area()`/`place()`/`span()`/`namedArea()`) and the individual line longhands are mutually exclusive; `alignSelf()` + `justifySelf()` collapse into `place-self`.
+
+### `FlexItem`
+
+| Method | Returns | CSS / effect |
+|---|---|---|
+| `FlexItem::select(string $selector)` | `static` | Factory. |
+| `grow(int\|float $value)` | `self` | `flex-grow: <value>` |
+| `shrink(int\|float $value)` | `self` | `flex-shrink: <value>` |
+| `basis(string $value)` | `self` | `flex-basis: <value>` |
+| `flex(int\|float $grow, int\|float $shrink, string $basis)` | `self` | `flex: <grow> <shrink> <basis>` |
+| `alignSelf(ItemAlignment $a)` | `self` | `align-self: <a>` |
+| `order(int $value)` | `self` | `order: <value>` |
+| `toCss(string $indent = '')` | `string` | The item's CSS rule. |
+
+`flex()` and the `grow()`/`shrink()`/`basis()` longhands are mutually exclusive — setting either side clears the other. `FlexItem` has no `justifySelf()` (see [Limitations](#limitations)).
 
 ---
 
