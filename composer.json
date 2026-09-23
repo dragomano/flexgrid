@@ -35,6 +35,7 @@
   },
   "scripts": {
     "fix": "vendor/bin/php-cs-fixer fix",
+    "lint": "vendor/bin/php-cs-fixer fix --dry-run --diff",
     "rector": "vendor/bin/rector process --clear-cache",
     "check": "vendor/bin/rector process --dry-run --clear-cache",
     "phpstan": "vendor/bin/phpstan analyse -l 10 src --memory-limit=512M --debug --no-progress",
