@@ -164,8 +164,14 @@ final class GridBuilder extends AbstractBuilder
         return $this;
     }
 
-    public function autoFlow(string $flow): self
+    public function autoFlow(GridValue|string $flow): self
     {
+        if ($flow instanceof GridValue) {
+            $this->autoFlow = $flow->value;
+
+            return $this;
+        }
+
         CssGuard::assertValue($flow);
 
         $this->autoFlow = $flow;

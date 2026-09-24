@@ -87,7 +87,7 @@ final class Grid
             ->autoFillColumns($minWidth)
             ->autoRows('10px')
             ->gap($gap)
-            ->autoFlow('row dense');
+            ->autoFlow(GridValue::RowDense);
     }
 
     /**

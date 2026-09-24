@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use FlexGrid\Enums\ContentAlignment;
+use FlexGrid\Enums\GridValue;
 use FlexGrid\Enums\ItemAlignment;
 use FlexGrid\GridBuilder;
 use FlexGrid\GridTemplate;
@@ -113,6 +114,16 @@ describe('GridBuilder container', function () {
     it('sets grid-auto-flow', function () {
         $props = GridBuilder::make()->autoFlow('row dense')->buildProperties();
         expect($props['grid-auto-flow'])->toBe('row dense');
+    });
+
+    it('sets grid-auto-flow from a GridValue enum', function () {
+        $props = GridBuilder::make()->autoFlow(GridValue::RowDense)->buildProperties();
+        expect($props['grid-auto-flow'])->toBe('row dense');
+    });
+
+    it('sets grid-auto-flow from a plain GridValue direction', function () {
+        $props = GridBuilder::make()->autoFlow(GridValue::Column)->buildProperties();
+        expect($props['grid-auto-flow'])->toBe('column');
     });
 
     it('sets individual alignment properties', function () {

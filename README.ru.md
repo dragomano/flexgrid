@@ -815,7 +815,7 @@ FlexBuilder::make('.list')
 | `areaRows(mixed ...$rows)` | `self` | Строит `grid-template-areas` из строк или массивов имён. |
 | `autoRows(string $size)` | `self` | `grid-auto-rows: <size>` |
 | `autoColumns(string $size)` | `self` | `grid-auto-columns: <size>` |
-| `autoFlow(string $flow)` | `self` | `grid-auto-flow: <flow>` |
+| `autoFlow(GridValue\|string $flow)` | `self` | `grid-auto-flow: <flow>`. Принимает кейс `GridValue` (`Row`, `Column`, `RowDense`, `ColumnDense`) или произвольную строку. |
 | `alignItems(ItemAlignment $a)` | `self` | `align-items: <a>` |
 | `justifyItems(ItemAlignment $a)` | `self` | `justify-items: <a>` |
 | `placeItems(ItemAlignment $align, ?ItemAlignment $justify = null)` | `self` | `place-items: <align> [<justify>]`; сворачивается в одно значение при равенстве. |

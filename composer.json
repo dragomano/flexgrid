@@ -39,6 +39,10 @@
     "lint": "vendor/bin/php-cs-fixer fix --dry-run --diff",
     "rector": "vendor/bin/rector process --clear-cache",
     "check": "vendor/bin/rector process --dry-run --clear-cache",
+    "bench": [
+      "@php benchmarks/build.php",
+      "@php benchmarks/container.php"
+    ],
     "phpstan": "vendor/bin/phpstan analyse -l 10 src --memory-limit=512M --debug --no-progress",
     "psalm": "vendor/bin/psalm --stats --no-cache",
     "bc": "roave-backward-compatibility-check --from=origin/main",

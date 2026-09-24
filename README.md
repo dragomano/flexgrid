@@ -815,7 +815,7 @@ Adds grid-specific methods on top of the shared container methods.
 | `areaRows(mixed ...$rows)` | `self` | Builds `grid-template-areas` from strings or arrays of names. |
 | `autoRows(string $size)` | `self` | `grid-auto-rows: <size>` |
 | `autoColumns(string $size)` | `self` | `grid-auto-columns: <size>` |
-| `autoFlow(string $flow)` | `self` | `grid-auto-flow: <flow>` |
+| `autoFlow(GridValue\|string $flow)` | `self` | `grid-auto-flow: <flow>`. Accepts a `GridValue` case (`Row`, `Column`, `RowDense`, `ColumnDense`) or a raw string. |
 | `alignItems(ItemAlignment $a)` | `self` | `align-items: <a>` |
 | `justifyItems(ItemAlignment $a)` | `self` | `justify-items: <a>` |
 | `placeItems(ItemAlignment $align, ?ItemAlignment $justify = null)` | `self` | `place-items: <align> [<justify>]`; collapses to one value when equal. |
